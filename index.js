@@ -1,7 +1,7 @@
 import {Navigation} from 'react-native-navigation';
-import App from './screens/Init';
+import Init from './screens/Init';
 
-Navigation.registerComponent('com.mk0er.Init', () => App);
+Navigation.registerComponent('com.mk0er.Init', () => Init);
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
@@ -11,6 +11,14 @@ Navigation.events().registerAppLaunchedListener(() => {
           {
             component: {
               name: 'com.mk0er.Init',
+              options: {
+                statusBar: {
+                  visible: 'false',
+                },
+                topBar: {
+                  visible: 'false',
+                },
+              },
             },
           },
         ],
