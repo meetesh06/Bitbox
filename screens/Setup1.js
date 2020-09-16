@@ -58,8 +58,7 @@ const App: () => React$Node = () => {
     });
   }
 
-  function loginScreen() {
-  }
+  function loginScreen() {}
 
   return (
     <>

@@ -4,6 +4,9 @@ import {Navigation} from 'react-native-navigation';
 import Init from './screens/Init';
 import Setup from './screens/Setup1';
 import Signup from './screens/Signup';
+import Master from './screens/Master';
+import Google from './screens/Google';
+
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
 Navigation.registerComponent(
@@ -42,6 +45,32 @@ Navigation.registerComponent(
   () => Setup,
 );
 
+Navigation.registerComponent(
+  'com.mk0er.Master',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Master {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Master,
+);
+
+Navigation.registerComponent(
+  'com.mk0er.Google',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Google {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Google,
+);
+
+
+
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
     root: {
@@ -49,7 +78,7 @@ Navigation.events().registerAppLaunchedListener(() => {
         children: [
           {
             component: {
-              name: 'com.mk0er.Init',
+              name: 'com.mk0er.Google',
               options: {
                 statusBar: {
                   visible: true,
