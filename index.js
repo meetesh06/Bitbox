@@ -3,6 +3,7 @@ import {Navigation} from 'react-native-navigation';
 
 import Init from './screens/Init';
 import Setup from './screens/Setup1';
+import Signup from './screens/Signup';
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
 Navigation.registerComponent(
@@ -15,6 +16,18 @@ Navigation.registerComponent(
     );
   },
   () => Init,
+);
+
+Navigation.registerComponent(
+  'com.mk0er.Signup',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Signup {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Signup,
 );
 
 Navigation.registerComponent(

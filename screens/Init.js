@@ -5,7 +5,7 @@ import TypeWriter from 'react-native-typewriter';
 import {useNavigation} from 'react-native-navigation-hooks';
 
 const App: () => React$Node = () => {
-  const {setStackRoot, push} = useNavigation();
+  const {push} = useNavigation();
 
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',
@@ -33,15 +33,27 @@ const App: () => React$Node = () => {
         name: 'com.mk0er.Setup1',
         options: {
           topBar: {
-            title: {
-              text: "Let's get started",
-              color: '#3a3a3a',
-              fontFamily: 'Poppins-Bold',
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 200,
+                },
+              },
             },
-            backButton: {
-              visible: false,
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
             },
-            animate: true,
           },
         },
       },
