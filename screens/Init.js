@@ -2,8 +2,11 @@ import React, {useState} from 'react';
 import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
 import TypeWriter from 'react-native-typewriter';
+import {useNavigation} from 'react-native-navigation-hooks';
 
 const App: () => React$Node = () => {
+  const {setStackRoot, push} = useNavigation();
+
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',
   );
@@ -25,6 +28,24 @@ const App: () => React$Node = () => {
 
   function handleNextScreen() {
     setSCount(-1);
+    push({
+      component: {
+        name: 'com.mk0er.Setup1',
+        options: {
+          topBar: {
+            title: {
+              text: "Let's get started",
+              color: '#3a3a3a',
+              fontFamily: 'Poppins-Bold',
+            },
+            backButton: {
+              visible: false,
+            },
+            animate: true,
+          },
+        },
+      },
+    });
   }
 
   return (
@@ -55,9 +76,7 @@ const App: () => React$Node = () => {
             <Text style={styles.button1Text}>START</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.madeInIndiaText}>
-          MADE IN INDIA
-        </Text>
+        <Text style={styles.madeInIndiaText}>MADE IN INDIA</Text>
       </AnimatedLinearGradient>
     </>
   );
@@ -113,9 +132,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#fff',
     fontFamily: 'Poppins-Thin',
-    marginBottom: 20
-
-  }
+    marginBottom: 20,
+  },
 });
 
 const gradientStyles = {
