@@ -15,8 +15,14 @@ import {
   GoogleSigninButton,
   statusCodes,
 } from '@react-native-community/google-signin';
+import {useNavigation} from 'react-native-navigation-hooks';
+
+import THEME_DATA from './Globals/ThemeData';
+import {ignoreTheme} from './Globals/Functions';
 
 const App: () => React$Node = () => {
+  const {setStackRoot} = useNavigation();
+  const BUTTONS = THEME_DATA.BUTTONS;
   useEffect(() => {
     GoogleSignin.configure({
       scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
@@ -31,13 +37,52 @@ const App: () => React$Node = () => {
     });
   }, []);
 
-  function handleSignup() {}
+  function handleSignup() {
+    // SET CLOUD STORAGE TO NO
+    handleNextPage();
+  }
+
+  function handleNextPage(data) {
+    setStackRoot({
+      component: {
+        name: 'com.mk1er.Theme',
+        options: {
+          topBar: {
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 200,
+                },
+              },
+            },
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async function googleSignIn() {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       // this.setState({userInfo});
       console.log(userInfo);
+      // STORE TOKEN LOCALLY
+      handleNextPage();
     } catch (error) {
       console.log(error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -76,12 +121,20 @@ const App: () => React$Node = () => {
           </View>
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button4} onPress={googleSignIn}>
-                <Text style={styles.button4Text}>Sign In with Google</Text>
+              <TouchableOpacity
+                style={ignoreTheme(BUTTONS.BUTTON4, 'btn')}
+                onPress={googleSignIn}>
+                <Text style={ignoreTheme(BUTTONS.BUTTON4, 'text')}>
+                  Sign In with Google
+                </Text>
               </TouchableOpacity>
               <Text style={styles.buttonSeperatorText}>OR</Text>
-              <TouchableOpacity style={styles.button5} onPress={handleSignup}>
-                <Text style={styles.button5Text}>Continue without google</Text>
+              <TouchableOpacity
+                style={ignoreTheme(BUTTONS.BUTTON5, 'btn')}
+                onPress={handleSignup}>
+                <Text style={ignoreTheme(BUTTONS.BUTTON4, 'text')}>
+                  Continue without google
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -127,31 +180,6 @@ const styles = StyleSheet.create({
     color: '#464949',
     backgroundColor: '#f1f1f1',
     borderBottomColor: 'red',
-  },
-  button4: {
-    width: '70%',
-    borderColor: '#1e88ae',
-    borderWidth: 2.3,
-    padding: 15,
-    backgroundColor: '#1e88ae',
-    borderRadius: 10,
-  },
-  button4Text: {
-    textAlign: 'center',
-    color: '#fff',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
-  },
-  button5: {
-    width: '70%',
-    padding: 0,
-    borderRadius: 10,
-  },
-  button5Text: {
-    textAlign: 'center',
-    color: '#a0a0a0',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
   },
   buttonContainer: {
     justifyContent: 'center',

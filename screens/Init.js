@@ -3,15 +3,21 @@ import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
 import TypeWriter from 'react-native-typewriter';
 import {useNavigation} from 'react-native-navigation-hooks';
-import {goToHome} from './Navigators/HomeNav';
+import THEME_DATA from './Globals/ThemeData';
+import {ignoreTheme} from './Globals/Functions';
+
+import {goToHome} from './Navigators/HomeNav'
+
 const App: () => React$Node = () => {
-  const {push} = useNavigation();
+  const {push, setStackRoot} = useNavigation();
 
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',
   );
   const [sCount, setSCount] = useState(0);
   const [sCountTyping, setSCountTyping] = useState(1);
+
+  const BUTTONS = THEME_DATA.BUTTONS;
 
   function smallHeadingHandler() {
     if (sCount === 0) {
@@ -85,8 +91,10 @@ const App: () => React$Node = () => {
         </View>
 
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.button1} onPress={handleNextScreen}>
-            <Text style={styles.button1Text}>START</Text>
+          <TouchableOpacity
+            style={ignoreTheme(BUTTONS.BUTTON1, 'btn')}
+            onPress={handleNextScreen}>
+            <Text style={ignoreTheme(BUTTONS.BUTTON1, 'text')}>START</Text>
           </TouchableOpacity>
         </View>
         <Text style={styles.madeInIndiaText}>MADE IN INDIA</Text>
@@ -121,20 +129,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     textAlign: 'center',
-  },
-  button1: {
-    width: '70%',
-    borderColor: 'white',
-    borderWidth: 1,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  button1Text: {
-    textAlign: 'center',
-    color: 'rgb(10, 147, 142)',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
   },
   bottomButtonContainer: {
     flex: 1,

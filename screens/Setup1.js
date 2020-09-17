@@ -10,6 +10,9 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from 'react-native-navigation-hooks';
 
+import THEME_DATA from './Globals/ThemeData';
+import {ignoreTheme} from './Globals/Functions';
+
 // import Carousel from 'react-native-snap-carousel';
 
 // const SLIDER_WIDTH = Dimensions.get('window').width;
@@ -24,6 +27,7 @@ const App: () => React$Node = () => {
   //     </View>
   //   );
   // }
+  const BUTTONS = THEME_DATA.BUTTONS;
 
   function signupScreen() {
     push({
@@ -94,12 +98,16 @@ const App: () => React$Node = () => {
         </View>
         <View style={styles.bottomContainer}>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button1} onPress={signupScreen}>
-              <Text style={styles.button1Text}>SIGN UP</Text>
+            <TouchableOpacity
+              style={ignoreTheme(BUTTONS.BUTTON1, 'btn')}
+              onPress={signupScreen}>
+              <Text style={ignoreTheme(BUTTONS.BUTTON1, 'text')}>SIGN UP</Text>
             </TouchableOpacity>
             <Text style={styles.buttonSeperatorText}>OR</Text>
-            <TouchableOpacity style={styles.button2} onPress={loginScreen}>
-              <Text style={styles.button2Text}>LOG IN</Text>
+            <TouchableOpacity
+              style={ignoreTheme(BUTTONS.BUTTON2, 'btn')}
+              onPress={loginScreen}>
+              <Text style={ignoreTheme(BUTTONS.BUTTON2, 'text')}>LOG IN</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -125,36 +133,9 @@ const styles = StyleSheet.create({
     marginLeft: 25,
     marginRight: 25,
   },
-  button2: {
-    width: '70%',
-    borderColor: 'white',
-    borderWidth: 2.3,
-    padding: 12,
-    borderRadius: 15,
-  },
-  button2Text: {
-    textAlign: 'center',
-    color: '#fff',
-    fontFamily: 'Poppins-ExtraBold',
-    fontSize: 15,
-  },
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  button1: {
-    width: '70%',
-    borderColor: 'white',
-    borderWidth: 1,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  button1Text: {
-    textAlign: 'center',
-    color: 'rgb(10, 147, 142)',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
   },
   buttonSeperatorText: {
     padding: 10,

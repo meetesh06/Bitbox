@@ -10,9 +10,17 @@ import {
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
+import {useNavigation} from 'react-native-navigation-hooks';
+
+import THEME_DATA from './Globals/ThemeData';
+import {ignoreTheme} from './Globals/Functions';
+
 const App: () => React$Node = () => {
+  const {setStackRoot} = useNavigation();
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+
+  const BUTTONS = THEME_DATA.BUTTONS;
 
   function validateExpression(expression, val, state, trigger) {
     if (!expression.test(val)) {
@@ -23,7 +31,38 @@ const App: () => React$Node = () => {
     state(val);
   }
 
-  function handleSignup() {}
+  function handleNext() {
+    setStackRoot({
+      component: {
+        name: 'com.mk1er.Google',
+        options: {
+          topBar: {
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 200,
+                },
+              },
+            },
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
   return (
     <>
       <View style={styles.container}>
@@ -84,17 +123,17 @@ const App: () => React$Node = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={{
-                  ...styles.button4,
+                  ...ignoreTheme(BUTTONS.BUTTON4, 'btn'),
                   borderColor:
                     passwordError || password === '' ? '#bebebe' : '#1e88ae',
                   backgroundColor:
                     passwordError || password === '' ? '#fff' : '#1e88ae',
                 }}
                 disabled={passwordError || password === ''}
-                onPress={handleSignup}>
+                onPress={handleNext}>
                 <Text
                   style={{
-                    ...styles.button4Text,
+                    ...ignoreTheme(BUTTONS.BUTTON4, 'text'),
                     color:
                       passwordError || password === '' ? '#bebebe' : '#fff',
                   }}>
@@ -143,20 +182,6 @@ const styles = StyleSheet.create({
     color: '#464949',
     backgroundColor: '#f1f1f1',
     borderBottomColor: 'red',
-  },
-  button4: {
-    width: '70%',
-    borderColor: '#1e88ae',
-    borderWidth: 2.3,
-    padding: 15,
-    backgroundColor: '#1e88ae',
-    borderRadius: 10,
-  },
-  button4Text: {
-    textAlign: 'center',
-    color: '#fff',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
   },
   buttonContainer: {
     justifyContent: 'center',

@@ -8,6 +8,10 @@ import Master from './screens/Master';
 import Google from './screens/Google';
 import HomeScreen from './screens/HomeScreen';
 import BeamScreen from './screens/BeamScreen';
+import Theme from './screens/Theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
+import THEME_DATA from './screens/Globals/ThemeData';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -48,7 +52,7 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(
-  'com.mk0er.Master',
+  'com.mk1er.Master',
   () => (props) => {
     return (
       <NavigationProvider value={{componentId: props.componentId}}>
@@ -60,7 +64,7 @@ Navigation.registerComponent(
 );
 
 Navigation.registerComponent(
-  'com.mk0er.Google',
+  'com.mk1er.Google',
   () => (props) => {
     return (
       <NavigationProvider value={{componentId: props.componentId}}>
@@ -93,6 +97,18 @@ Navigation.registerComponent(
     );
   },
   () => BeamScreen,
+);
+
+Navigation.registerComponent(
+  'com.mk1er.Theme',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Theme {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Theme,
 );
 
 Navigation.events().registerBottomTabSelectedListener(
@@ -131,26 +147,38 @@ Navigation.events().registerModalDismissedListener(({componentName}) => {
   }
 });
 
+let promise = new Promise(async function (resolve, reject) {
+  try {
+    const value = await AsyncStorage.getItem(THEME_MODE);
+    THEME_DATA.C_THEME_MODE = value;
+  } catch (error) {
+    // Error saving data
+  }
+  resolve();
+});
+
 Navigation.events().registerAppLaunchedListener(() => {
-  Navigation.setRoot({
-    root: {
-      stack: {
-        children: [
-          {
-            component: {
-              name: 'com.mk0er.Init',
-              options: {
-                statusBar: {
-                  visible: true,
-                },
-                topBar: {
-                  visible: 'false',
+  promise.then((result) => {
+    Navigation.setRoot({
+      root: {
+        stack: {
+          children: [
+            {
+              component: {
+                name: 'com.mk0er.Init',
+                options: {
+                  statusBar: {
+                    visible: true,
+                  },
+                  topBar: {
+                    visible: 'false',
+                  },
                 },
               },
             },
-          },
-        ],
+          ],
+        },
       },
-    },
+    });
   });
 });

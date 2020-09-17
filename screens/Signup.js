@@ -14,6 +14,9 @@ import OTPTextInput from 'react-native-otp-textinput';
 import {useNavigation} from 'react-native-navigation-hooks';
 import {goToHome} from './Navigators/HomeNav';
 
+import THEME_DATA from './Globals/ThemeData';
+import {ignoreTheme} from './Globals/Functions';
+
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const [name, setName] = useState('');
@@ -23,6 +26,7 @@ const App: () => React$Node = () => {
   const [age, setAge] = useState('');
   const [ageError, setAgeError] = useState(false);
   const [otp, setOtp] = useState('');
+  const BUTTONS = THEME_DATA.BUTTONS;
 
   function validateExpression(expression, val, state, trigger) {
     if (!expression.test(val)) {
@@ -34,7 +38,36 @@ const App: () => React$Node = () => {
   }
 
   async function handleSignup() {
-    goToHome(setStackRoot);
+    setStackRoot({
+      component: {
+        name: 'com.mk1er.Master',
+        options: {
+          topBar: {
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 200,
+                },
+              },
+            },
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
   return (
     <>
@@ -116,7 +149,7 @@ const App: () => React$Node = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={{
-                  ...styles.button3,
+                  ...ignoreTheme(BUTTONS.BUTTON3, 'btn'),
                   borderColor:
                     nameError ||
                     emailError ||
@@ -138,7 +171,7 @@ const App: () => React$Node = () => {
                 onPress={handleSignup}>
                 <Text
                   style={{
-                    ...styles.button3Text,
+                    ...ignoreTheme(BUTTONS.BUTTON3, 'text'),
                     color:
                       nameError ||
                       emailError ||
@@ -195,20 +228,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f1f1',
     borderBottomColor: 'red',
   },
-  button3: {
-    width: '70%',
-    borderColor: '#1e88ae',
-    borderWidth: 2.3,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  button3Text: {
-    textAlign: 'center',
-    color: '#1e88ae',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 15,
-  },
+
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
