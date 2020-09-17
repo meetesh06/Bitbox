@@ -1,12 +1,17 @@
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
+import THEME_DATA from '../Globals/ThemeData';
+import {darkThemeColor, updateThemeMode} from '../Globals/Functions';
+import {PRIMARY, B_CONTAINER, GRAY} from '../Globals/Colors';
 
 const layouts: Promise<Layouts> = new Promise((resolve) => {
   Promise.all([
     FontAwesomeIcon.getImageSource('home', 25),
     FontAwesomeIcon.getImageSource('bolt', 25),
-    FontAwesomeIcon.getImageSource('unlock', 15),
+    FontAwesomeIcon.getImageSource('pencil', 15),
     FontAwesomeIcon.getImageSource('credit-card-alt', 13),
     FontAwesomeIcon.getImageSource('bank', 13),
+    FontAwesomeIcon.getImageSource('user', 13),
+    updateThemeMode(),
   ]).then((icons) => {
     resolve({
       bottomTabs: {
@@ -26,40 +31,11 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
               options: {
                 bottomTab: {
                   icon: icons[0],
-                  selectedIconColor: 'red',
-                  iconInsets: {
-                    left: 15,
-                    right: 15,
-                  },
+                  iconColor: GRAY,
+                  selectedIconColor: PRIMARY,
                 },
-                fab: {
-                  id: 'createFAB',
-                  backgroundColor: '#3977de',
-                  rippleColor: '#2556a8',
-                  clickColor: '#2556a8',
-                  actions: [
-                    {
-                      id: 'createPasswords',
-                      icon: icons[2],
-                      backgroundColor: '#2556a8',
-                      iconColor: '#fff',
-                      size: 'mini',
-                    },
-                    {
-                      id: 'createCard',
-                      icon: icons[3],
-                      backgroundColor: '#2556a8',
-                      iconColor: '#fff',
-                      size: 'mini',
-                    },
-                    {
-                      id: 'Bank',
-                      icon: icons[4],
-                      backgroundColor: '#2556a8',
-                      iconColor: '#fff',
-                      size: 'mini',
-                    },
-                  ],
+                topBar: {
+                  visible: false,
                 },
               },
             },
@@ -78,6 +54,33 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
               options: {
                 bottomTab: {
                   icon: icons[1],
+                  iconColor: GRAY,
+                },
+                topBar: {
+                  visible: false,
+                },
+              },
+            },
+          },
+          {
+            stack: {
+              id: 'com.mk1er.Settings',
+              children: [
+                {
+                  component: {
+                    id: 'com.mk1er.BeamScreen',
+                    name: 'com.mk1er.BeamScreen',
+                  },
+                },
+              ],
+              options: {
+                bottomTab: {
+                  icon: icons[5],
+                  iconColor: GRAY,
+                  selectedIconColor: PRIMARY,
+                },
+                topBar: {
+                  visible: false,
                 },
               },
             },
@@ -85,9 +88,32 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
         ],
         options: {
           bottomTabs: {
-            animate: false,
-            hideOnScroll: true,
+            animate: true,
             titleDisplayMode: 'alwaysHide',
+            backgroundColor: darkThemeColor(B_CONTAINER),
+          },
+          topBar: {
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 200,
+                },
+              },
+            },
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
+            },
           },
         },
       },

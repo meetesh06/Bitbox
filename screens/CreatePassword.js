@@ -2,17 +2,19 @@
 import React from 'react';
 import {
   StyleSheet,
-  View,
+  ScrollView,
   Text,
   // Dimensions,
 } from 'react-native';
+import {darkThemeColor} from './Globals/Functions';
+import {B_CONTAINER} from './Globals/Colors';
 
 const App: () => React$Node = () => {
   return (
     <>
-      <View style={styles.container}>
-        <Text>Home Screen</Text>
-      </View>
+      <ScrollView nestedScrollEnabled={true} style={styles.container}>
+        <Text>Create Screen</Text>
+      </ScrollView>
     </>
   );
 };
@@ -20,7 +22,7 @@ const App: () => React$Node = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: darkThemeColor(B_CONTAINER),
   },
 });
 

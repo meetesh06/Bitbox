@@ -9,9 +9,12 @@ import Google from './screens/Google';
 import HomeScreen from './screens/HomeScreen';
 import BeamScreen from './screens/BeamScreen';
 import Theme from './screens/Theme';
+import Settings from './screens/Settings';
 import AsyncStorage from '@react-native-community/async-storage';
 import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
 import THEME_DATA from './screens/Globals/ThemeData';
+
+import CreateSelector from './screens/Overlays/CreateSelector';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -111,6 +114,30 @@ Navigation.registerComponent(
   () => Theme,
 );
 
+Navigation.registerComponent(
+  'com.mk1er.Settings',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Settings {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Settings,
+);
+
+Navigation.registerComponent(
+  'com.mk2er.CreateSelector',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <CreateSelector {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => CreateSelector,
+);
+
 Navigation.events().registerBottomTabSelectedListener(
   ({selectedTabIndex, unselectedTabIndex}) => {
     if (selectedTabIndex == 1) {
@@ -151,10 +178,10 @@ let promise = new Promise(async function (resolve, reject) {
   try {
     const value = await AsyncStorage.getItem(THEME_MODE);
     THEME_DATA.C_THEME_MODE = value;
+    resolve();
   } catch (error) {
     // Error saving data
   }
-  resolve();
 });
 
 Navigation.events().registerAppLaunchedListener(() => {

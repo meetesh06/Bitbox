@@ -6,10 +6,10 @@ import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme} from './Globals/Functions';
 
-import {goToHome} from './Navigators/HomeNav'
+import {goToHome} from './Navigators/HomeNav';
 
 const App: () => React$Node = () => {
-  const {push, setStackRoot} = useNavigation();
+  const {push} = useNavigation();
 
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',

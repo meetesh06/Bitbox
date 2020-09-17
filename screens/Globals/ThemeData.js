@@ -1,5 +1,8 @@
+import {PRIMARY, PRIMARY_LIGHT} from './Colors';
+
 const THEME_DATA = {
   C_THEME_MODE: 'light',
+  UPDATED: false,
   BUTTONS: {
     BUTTON1: {
       btn: {
@@ -20,13 +23,13 @@ const THEME_DATA = {
       },
       text: {
         textAlign: 'center',
-        color: 'rgb(10, 147, 142)',
+        color: PRIMARY_LIGHT,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
       d_text: {
         textAlign: 'center',
-        color: 'rgb(10, 147, 142)',
+        color: PRIMARY_LIGHT,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
@@ -57,12 +60,12 @@ const THEME_DATA = {
         color: '#fff',
         fontFamily: 'Poppins-ExtraBold',
         fontSize: 15,
-      }
+      },
     },
     BUTTON3: {
       btn: {
         width: '70%',
-        borderColor: '#1e88ae',
+        borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
         backgroundColor: '#fff',
@@ -70,7 +73,7 @@ const THEME_DATA = {
       },
       d_btn: {
         width: '70%',
-        borderColor: '#1e88ae',
+        borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
         backgroundColor: '#fff',
@@ -78,13 +81,13 @@ const THEME_DATA = {
       },
       text: {
         textAlign: 'center',
-        color: '#1e88ae',
+        color: PRIMARY,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
       d_text: {
         textAlign: 'center',
-        color: '#1e88ae',
+        color: PRIMARY,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
@@ -92,18 +95,18 @@ const THEME_DATA = {
     BUTTON4: {
       btn: {
         width: '70%',
-        borderColor: '#1e88ae',
+        borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
-        backgroundColor: '#1e88ae',
+        backgroundColor: PRIMARY,
         borderRadius: 10,
       },
       d_btn: {
         width: '70%',
-        borderColor: '#1e88ae',
+        borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
-        backgroundColor: '#1e88ae',
+        backgroundColor: PRIMARY,
         borderRadius: 10,
       },
       text: {
