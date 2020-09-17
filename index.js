@@ -10,10 +10,11 @@ import HomeScreen from './screens/HomeScreen';
 import BeamScreen from './screens/BeamScreen';
 import Theme from './screens/Theme';
 import Settings from './screens/Settings';
+import CreateCredential from './screens/CreateCredential';
 import AsyncStorage from '@react-native-community/async-storage';
 import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
 import THEME_DATA from './screens/Globals/ThemeData';
-
+import {updateThemeMode} from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
@@ -138,6 +139,18 @@ Navigation.registerComponent(
   () => CreateSelector,
 );
 
+Navigation.registerComponent(
+  'com.mk2er.CreateCredential',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <CreateCredential {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => CreateCredential,
+);
+
 Navigation.events().registerBottomTabSelectedListener(
   ({selectedTabIndex, unselectedTabIndex}) => {
     if (selectedTabIndex == 1) {
@@ -175,13 +188,8 @@ Navigation.events().registerModalDismissedListener(({componentName}) => {
 });
 
 let promise = new Promise(async function (resolve, reject) {
-  try {
-    const value = await AsyncStorage.getItem(THEME_MODE);
-    THEME_DATA.C_THEME_MODE = value;
-    resolve();
-  } catch (error) {
-    // Error saving data
-  }
+  await updateThemeMode();
+  resolve();
 });
 
 Navigation.events().registerAppLaunchedListener(() => {

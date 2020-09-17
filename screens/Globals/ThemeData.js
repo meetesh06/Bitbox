@@ -1,4 +1,4 @@
-import {PRIMARY, PRIMARY_LIGHT} from './Colors';
+import {PRIMARY, PRIMARY_LIGHT, GRAY, WHITE, TITLE_BLACK} from './Colors';
 
 const THEME_DATA = {
   C_THEME_MODE: 'light',
@@ -10,7 +10,7 @@ const THEME_DATA = {
         borderColor: 'white',
         borderWidth: 1,
         padding: 15,
-        backgroundColor: '#fff',
+        backgroundColor: WHITE,
         borderRadius: 10,
       },
       d_btn: {
@@ -18,7 +18,7 @@ const THEME_DATA = {
         borderColor: 'white',
         borderWidth: 1,
         padding: 15,
-        backgroundColor: '#fff',
+        backgroundColor: WHITE,
         borderRadius: 10,
       },
       text: {
@@ -51,13 +51,13 @@ const THEME_DATA = {
       },
       text: {
         textAlign: 'center',
-        color: '#fff',
+        color: WHITE,
         fontFamily: 'Poppins-ExtraBold',
         fontSize: 15,
       },
       d_text: {
         textAlign: 'center',
-        color: '#fff',
+        color: WHITE,
         fontFamily: 'Poppins-ExtraBold',
         fontSize: 15,
       },
@@ -68,7 +68,7 @@ const THEME_DATA = {
         borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
-        backgroundColor: '#fff',
+        backgroundColor: WHITE,
         borderRadius: 10,
       },
       d_btn: {
@@ -76,7 +76,7 @@ const THEME_DATA = {
         borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
-        backgroundColor: '#fff',
+        backgroundColor: WHITE,
         borderRadius: 10,
       },
       text: {
@@ -111,13 +111,13 @@ const THEME_DATA = {
       },
       text: {
         textAlign: 'center',
-        color: '#fff',
+        color: WHITE,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
       d_text: {
         textAlign: 'center',
-        color: '#fff',
+        color: WHITE,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },
@@ -144,6 +144,62 @@ const THEME_DATA = {
         color: '#a0a0a0',
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
+      },
+    },
+    BUTTON6: {
+      btn: {
+        width: 60,
+        height: 60,
+        borderRadius: 40,
+        justifyContent: 'center',
+        textAlign: 'center',
+        alignItems: 'center',
+      },
+      d_btn: {
+        width: 60,
+        height: 60,
+        borderRadius: 40,
+        justifyContent: 'center',
+        textAlign: 'center',
+        alignItems: 'center',
+      },
+    },
+  },
+  OVERLAY: {
+    HEADINGS: {
+      HEADING1: {
+        text: {
+          fontFamily: 'Poppins-Bold',
+          fontSize: 20,
+          color: TITLE_BLACK,
+          textAlign: 'center',
+          padding: 15,
+        },
+        d_text: {
+          fontFamily: 'Poppins-Bold',
+          fontSize: 20,
+          color: WHITE,
+          textAlign: 'center',
+          padding: 15,
+        },
+      },
+    },
+    INFO: {
+      INFO1: {
+        text: {
+          textAlign: 'center',
+          fontFamily: 'Poppins-Bold',
+          fontSize: 8,
+          color: GRAY,
+          marginTop: 10,
+        },
+        d_text: {
+          textAlign: 'center',
+          fontFamily: 'Poppins-Bold',
+          fontSize: 8,
+          color: GRAY,
+          marginTop: 10,
+        },
       },
     },
   },

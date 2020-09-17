@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   Text,
+  View,
   // Dimensions,
 } from 'react-native';
 import {darkThemeColor} from './Globals/Functions';
@@ -12,9 +13,9 @@ import {B_CONTAINER} from './Globals/Colors';
 const App: () => React$Node = () => {
   return (
     <>
-      <ScrollView nestedScrollEnabled={true} style={styles.container}>
-        <Text>Create Screen</Text>
-      </ScrollView>
+      <View style={styles.container}>
+        <Text>Create Credential</Text>
+      </View>
     </>
   );
 };

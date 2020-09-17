@@ -1,7 +1,7 @@
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import THEME_DATA from '../Globals/ThemeData';
 import {darkThemeColor, updateThemeMode} from '../Globals/Functions';
-import {PRIMARY, B_CONTAINER, GRAY} from '../Globals/Colors';
+import {PRIMARY, B_BOTTOMNAV, GRAY} from '../Globals/Colors';
 
 const layouts: Promise<Layouts> = new Promise((resolve) => {
   Promise.all([
@@ -90,7 +90,7 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
           bottomTabs: {
             animate: true,
             titleDisplayMode: 'alwaysHide',
-            backgroundColor: darkThemeColor(B_CONTAINER),
+            backgroundColor: darkThemeColor(B_BOTTOMNAV),
           },
           topBar: {
             visible: false,

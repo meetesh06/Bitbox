@@ -11,7 +11,7 @@ import {B_CONTAINER, PRIMARY} from './Globals/Colors';
 import FAB from 'react-native-fab';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from 'react-native-navigation-hooks';
-import { useNavigationCommandComplete } from 'react-native-navigation-hooks';
+import {useNavigationCommandComplete} from 'react-native-navigation-hooks';
 
 const App: () => React$Node = () => {
   const {showOverlay} = useNavigation();

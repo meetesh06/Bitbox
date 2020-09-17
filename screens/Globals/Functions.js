@@ -6,6 +6,7 @@ export const updateThemeMode = async () => {
   try {
     const value = await AsyncStorage.getItem(THEME_MODE);
     THEME_DATA.C_THEME_MODE = value;
+    THEME_DATA.UPDATED = true;
     return;
   } catch (error) {
     // Error saving data
