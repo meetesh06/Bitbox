@@ -2,18 +2,21 @@
 import React from 'react';
 import {
   StyleSheet,
-  ScrollView,
   Text,
   View,
   // Dimensions,
 } from 'react-native';
-import {darkThemeColor} from './Globals/Functions';
-import {B_CONTAINER} from './Globals/Colors';
+import {darkThemeColor} from '../Globals/Functions';
+import {B_CONTAINER} from '../Globals/Colors';
 
 const App: () => React$Node = () => {
   return (
     <>
-      <View style={styles.container}>
+      <View
+        style={{
+          ...styles.container,
+          backgroundColor: darkThemeColor(B_CONTAINER),
+        }}>
         <Text>Create Credential</Text>
       </View>
     </>
@@ -23,7 +26,6 @@ const App: () => React$Node = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: darkThemeColor(B_CONTAINER),
   },
 });
 

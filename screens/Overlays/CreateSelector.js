@@ -97,32 +97,6 @@ function Alert() {
                 CREDENTIAL {'\n'} (Website, App account's, etc.)
               </Text>
             </View>
-            {/* <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={{
-                  ...darkTheme(BUTTONS.BUTTON6, 'btn'),
-                  backgroundColor: PRIMARY,
-                }}
-                onPress={() => console.log('Button pressed')}>
-                <FontAwesomeIcon name="unlock" size={20} color={WHITE} />
-              </TouchableOpacity>
-              <Text style={darkTheme(OVERLAY.INFO.INFO1, 'text')}>
-                CREDENTIAL {'\n'} (Website, App account's, etc.)
-              </Text>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={{
-                  ...darkTheme(BUTTONS.BUTTON6, 'btn'),
-                  backgroundColor: PRIMARY,
-                }}
-                onPress={() => console.log('Button pressed')}>
-                <FontAwesomeIcon name="unlock" size={20} color={WHITE} />
-              </TouchableOpacity>
-              <Text style={darkTheme(OVERLAY.INFO.INFO1, 'text')}>
-                CREDENTIAL {'\n'} (Website, App account's, etc.)
-              </Text>
-            </View> */}
           </View>
         </Animated.View>
       </View>

@@ -10,7 +10,7 @@ import HomeScreen from './screens/HomeScreen';
 import BeamScreen from './screens/BeamScreen';
 import Theme from './screens/Theme';
 import Settings from './screens/Settings';
-import CreateCredential from './screens/CreateCredential';
+import CreateCredential from './screens/CreateScreens/CreateCredential';
 import AsyncStorage from '@react-native-community/async-storage';
 import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
 import THEME_DATA from './screens/Globals/ThemeData';
