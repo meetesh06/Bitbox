@@ -3,7 +3,7 @@ import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
 import TypeWriter from 'react-native-typewriter';
 import {useNavigation} from 'react-native-navigation-hooks';
-
+import {goToHome} from './Navigators/HomeNav';
 const App: () => React$Node = () => {
   const {push} = useNavigation();
 
@@ -28,36 +28,37 @@ const App: () => React$Node = () => {
 
   function handleNextScreen() {
     setSCount(-1);
-    push({
-      component: {
-        name: 'com.mk0er.Setup1',
-        options: {
-          topBar: {
-            visible: false,
-          },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 200,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    // push({
+    //   component: {
+    //     name: 'com.mk0er.Setup1',
+    //     options: {
+    //       topBar: {
+    //         visible: false,
+    //       },
+    //       animations: {
+    //         push: {
+    //           content: {
+    //             alpha: {
+    //               from: 0,
+    //               to: 1,
+    //               duration: 200,
+    //             },
+    //           },
+    //         },
+    //         pop: {
+    //           content: {
+    //             alpha: {
+    //               from: 1,
+    //               to: 0,
+    //               duration: 100,
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
+    goToHome(push);
   }
 
   return (

@@ -11,7 +11,11 @@ import {
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import OTPTextInput from 'react-native-otp-textinput';
+import {useNavigation} from 'react-native-navigation-hooks';
+import {goToHome} from './Navigators/HomeNav';
+
 const App: () => React$Node = () => {
+  const {setStackRoot} = useNavigation();
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState(false);
   const [email, setEmail] = useState('');
@@ -29,7 +33,9 @@ const App: () => React$Node = () => {
     state(val);
   }
 
-  function handleSignup() {}
+  async function handleSignup() {
+    goToHome(setStackRoot);
+  }
   return (
     <>
       <View style={styles.container}>

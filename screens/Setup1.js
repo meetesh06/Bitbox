@@ -39,7 +39,7 @@ const App: () => React$Node = () => {
                 alpha: {
                   from: 0,
                   to: 1,
-                  duration: 200,
+                  duration: 300,
                 },
               },
             },

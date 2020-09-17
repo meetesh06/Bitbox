@@ -6,6 +6,8 @@ import Setup from './screens/Setup1';
 import Signup from './screens/Signup';
 import Master from './screens/Master';
 import Google from './screens/Google';
+import HomeScreen from './screens/HomeScreen';
+import BeamScreen from './screens/BeamScreen';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -69,7 +71,65 @@ Navigation.registerComponent(
   () => Google,
 );
 
+Navigation.registerComponent(
+  'com.mk1er.HomeScreen',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <HomeScreen {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => HomeScreen,
+);
 
+Navigation.registerComponent(
+  'com.mk1er.BeamScreen',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <BeamScreen {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => BeamScreen,
+);
+
+Navigation.events().registerBottomTabSelectedListener(
+  ({selectedTabIndex, unselectedTabIndex}) => {
+    if (selectedTabIndex == 1) {
+      Navigation.showModal({
+        stack: {
+          children: [
+            {
+              component: {
+                id: 'com.mk1er.BeamScreen',
+                name: 'com.mk1er.BeamScreen',
+                options: {
+                  topBar: {
+                    title: {
+                      text: 'Beam Screen',
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      });
+    }
+  },
+);
+
+Navigation.events().registerModalDismissedListener(({componentName}) => {
+  if (componentName === 'com.mk1er.BeamScreen') {
+    Navigation.mergeOptions('com.mk1er', {
+      bottomTabs: {
+        currentTabIndex: 0,
+      },
+    });
+  }
+});
 
 Navigation.events().registerAppLaunchedListener(() => {
   Navigation.setRoot({
@@ -78,7 +138,7 @@ Navigation.events().registerAppLaunchedListener(() => {
         children: [
           {
             component: {
-              name: 'com.mk0er.Google',
+              name: 'com.mk0er.Init',
               options: {
                 statusBar: {
                   visible: true,
