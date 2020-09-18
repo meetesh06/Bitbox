@@ -1,24 +1,131 @@
-/* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import {
   StyleSheet,
-  Text,
   View,
+  ScrollView,
+  TouchableOpacity,
+  Text,
   // Dimensions,
 } from 'react-native';
-import {darkThemeColor} from '../Globals/Functions';
+import {darkThemeColor, darkTheme} from '../Globals/Functions';
 import {B_CONTAINER} from '../Globals/Colors';
+import {NavigationContext} from 'react-native-navigation-hooks';
+import TopBar from '../Components/TopBar';
+import CredentialCard from '../Components/CredentialCard';
+import ColorPicker from '../Components/ColorPicker';
+import Input from '../Components/Input';
+import InputTextArea from '../Components/InputTextArea';
+import THEME_DATA from '../Globals/ThemeData';
 
 const App: () => React$Node = () => {
+  const colors = [
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+    {
+      colorData: ['#d02324', '#9b1335'],
+    },
+    {
+      colorData: ['blue', 'coral'],
+    },
+  ];
+  const {componentId} = useContext(NavigationContext);
+  const [currentColor, setCurrentColor] = useState(colors[0]);
+  const [title, setTitle] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [otherData, setOtherData] = useState('');
+  const BUTTONS = THEME_DATA.BUTTONS;
+
+  function createCredential() {
+    console.log('created credential');
+  }
+
+  function selectedUpdate(element) {
+    setCurrentColor(element);
+  }
   return (
     <>
-      <View
+      <ScrollView
         style={{
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
-        <Text>Create Credential</Text>
-      </View>
+        <TopBar title="Create Credential" context={componentId} />
+        <View style={styles.preview}>
+          <CredentialCard
+            id="12as325"
+            title={title}
+            content="mee***@gmail.com"
+            style={1}
+            colors={currentColor.colorData}
+          />
+        </View>
+        <ColorPicker selectedUpdate={selectedUpdate} colors={colors} />
+        <View style={styles.inputsContainer}>
+          <Input title="Title" icon="pencil" value={title} updater={setTitle} />
+          <Input
+            title="Email"
+            icon="envelope"
+            value={email}
+            updater={setEmail}
+          />
+          <Input
+            title="Password"
+            icon="unlock-alt"
+            value={password}
+            updater={setPassword}
+          />
+          <InputTextArea
+            placeholder="Other details like security question, etc."
+            value={otherData}
+            updater={setOtherData}
+          />
+          <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity
+              style={darkTheme(BUTTONS.BUTTON4, 'btn')}
+              onPress={createCredential}>
+              <Text style={darkTheme(BUTTONS.BUTTON4, 'text')}>CREATE</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
     </>
   );
 };
@@ -26,6 +133,20 @@ const App: () => React$Node = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  preview: {
+    alignItems: 'center',
+    paddingTop: 30,
+  },
+  inputsContainer: {
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
+  bottomButtonContainer: {
+    marginTop: 25,
+    marginBottom: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

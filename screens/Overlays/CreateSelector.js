@@ -28,6 +28,7 @@ function Alert() {
     Animated.timing(top, {
       toValue: windowHeight,
       duration: 300,
+      useNativeDriver: true,
     }).start(() => Navigation.dismissOverlay(componentId));
   }
 
@@ -35,13 +36,15 @@ function Alert() {
     Animated.timing(top, {
       toValue: windowHeight / 2,
       duration: 300,
+      useNativeDriver: true,
     }).start();
-  }, [top]);
+  });
 
   function createCredential() {
     Animated.timing(top, {
       toValue: windowHeight,
       duration: 300,
+      useNativeDriver: true,
     }).start(() => {
       Navigation.dismissOverlay(componentId);
     });
@@ -76,7 +79,7 @@ function Alert() {
         <Animated.View
           style={{
             ...styles.root,
-            top,
+            translateY: top,
             backgroundColor: darkThemeColor(B_OVERLAY),
           }}
           useNativeDriver={true}>

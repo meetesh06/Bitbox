@@ -106,7 +106,7 @@ const THEME_DATA = {
         borderColor: PRIMARY,
         borderWidth: 2.3,
         padding: 15,
-        backgroundColor: PRIMARY,
+        backgroundColor: 'transparent',
         borderRadius: 10,
       },
       text: {
@@ -117,7 +117,7 @@ const THEME_DATA = {
       },
       d_text: {
         textAlign: 'center',
-        color: WHITE,
+        color: PRIMARY,
         fontFamily: 'Poppins-Bold',
         fontSize: 15,
       },

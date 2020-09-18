@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -29,7 +29,6 @@ const App: () => React$Node = () => {
     }
   }
 
-  function handleSignup() {}
   return (
     <>
       <View style={styles.container}>

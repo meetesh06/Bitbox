@@ -16,3 +16,22 @@ export const B_OVERLAY = {
   light: '#efefef',
   dark: '#1f1f1f',
 };
+export const B_TOPBAR_TITLE = {
+  light: '#141414',
+  dark: '#fff',
+};
+
+export const B_HIGHLIGHT = {
+  light: '#141414',
+  dark: '#efefef',
+};
+
+export const B_INPUT_BACK = {
+  light: '#efefef',
+  dark: '#1f1f1f',
+};
+
+export const B_INPUT_TEXT = {
+  light: '#1f1f1f',
+  dark: '#efefef',
+};
