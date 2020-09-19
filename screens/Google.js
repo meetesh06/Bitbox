@@ -132,7 +132,7 @@ const App: () => React$Node = () => {
               <TouchableOpacity
                 style={ignoreTheme(BUTTONS.BUTTON5, 'btn')}
                 onPress={handleSignup}>
-                <Text style={ignoreTheme(BUTTONS.BUTTON4, 'text')}>
+                <Text style={ignoreTheme(BUTTONS.BUTTON5, 'text')}>
                   Continue without google
                 </Text>
               </TouchableOpacity>

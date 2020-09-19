@@ -1,23 +1,30 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   ScrollView,
   TouchableOpacity,
+  CheckBox,
   // Dimensions,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import {useNavigation} from 'react-native-navigation-hooks';
-
+import {PRIMARY} from './Globals/Colors';
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme} from './Globals/Functions';
+import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+
+import {MASTER_KEY, SALT} from './Globals/Database';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const [password, setPassword] = useState('');
+  const [salt, setSalt] = useState('');
+  const [remote, setRemote] = useState('');
+  const [remoteLocking, setRemoteLocking] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
 
   const BUTTONS = THEME_DATA.BUTTONS;
@@ -31,7 +38,7 @@ const App: () => React$Node = () => {
     state(val);
   }
 
-  function handleNext() {
+  function nextScreen() {
     setStackRoot({
       component: {
         name: 'com.mk1er.Google',
@@ -62,6 +69,30 @@ const App: () => React$Node = () => {
         },
       },
     });
+  }
+
+  useEffect(() => {
+    // CALL TO REMOTE SERVER
+    setRemote('REMOTE_SALT');
+  }, []);
+
+  function handleNext() {
+    console.log(remoteLocking ? remote : salt);
+    Promise.all([
+      RNSecureKeyStore.set(MASTER_KEY, password, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(SALT, remoteLocking ? remote : salt, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+    ])
+      .then((res) => {
+        console.log(res);
+        nextScreen();
+      })
+      .catch((err) => {
+        console.log(err, 'THERE WAS AN ERROR ');
+      });
   }
   return (
     <>
@@ -112,6 +143,17 @@ const App: () => React$Node = () => {
               />{' '}
               Can contain special characters {'\n'}
             </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}>
+            <CheckBox
+              value={remoteLocking}
+              onValueChange={(val) => setRemoteLocking(val)}
+            />
+            <Text style={styles.checkboxText}>Enable Remote Locking.</Text>
           </View>
           <View>
             <Text style={styles.infoText1}>
@@ -194,6 +236,12 @@ const styles = StyleSheet.create({
   otpText: {
     color: '#052a37',
     fontFamily: 'Poppins-Medium',
+  },
+  checkboxText: {
+    color: '#052a37',
+    fontSize: 13,
+    fontFamily: 'Poppins-Bold',
+    alignSelf: 'center',
   },
   infoText1: {
     color: '#052a37',

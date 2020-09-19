@@ -11,7 +11,6 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
     FontAwesomeIcon.getImageSource('credit-card-alt', 13),
     FontAwesomeIcon.getImageSource('bank', 13),
     FontAwesomeIcon.getImageSource('user', 13),
-    updateThemeMode(),
   ]).then((icons) => {
     resolve({
       bottomTabs: {
@@ -90,7 +89,6 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
           bottomTabs: {
             animate: true,
             titleDisplayMode: 'alwaysHide',
-            backgroundColor: darkThemeColor(B_BOTTOMNAV),
           },
           topBar: {
             visible: false,
@@ -123,7 +121,12 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
 
 export function goToHome(navIntent) {
   layouts.then((result) => {
-    console.log(result);
-    navIntent(result);
+    updateThemeMode().then(() => {
+      result.bottomTabs.options.bottomTabs.backgroundColor = darkThemeColor(
+        B_BOTTOMNAV,
+      );
+      console.log(result.bottomTabs.options.bottomTabs);
+      navIntent(result);
+    });
   });
 }

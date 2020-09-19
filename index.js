@@ -14,7 +14,7 @@ import CreateCredential from './screens/CreateScreens/CreateCredential';
 import AsyncStorage from '@react-native-community/async-storage';
 import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
 import THEME_DATA from './screens/Globals/ThemeData';
-import {updateThemeMode} from './screens/Globals/Functions';
+import {updateThemeMode, updateDatabaseManager} from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
@@ -189,6 +189,7 @@ Navigation.events().registerModalDismissedListener(({componentName}) => {
 
 let promise = new Promise(async function (resolve, reject) {
   await updateThemeMode();
+  await updateDatabaseManager();
   resolve();
 });
 
@@ -200,7 +201,7 @@ Navigation.events().registerAppLaunchedListener(() => {
           children: [
             {
               component: {
-                name: 'com.mk0er.Init',
+                name: 'com.mk1er.Theme',
                 options: {
                   statusBar: {
                     visible: true,

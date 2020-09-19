@@ -15,6 +15,11 @@ import THEME_DATA from './Globals/ThemeData';
 
 import {goToHome} from './Navigators/HomeNav';
 
+import {darkThemeColor} from './Globals/Functions';
+import {B_BOTTOMNAV} from './Globals/Colors';
+
+import {Navigation} from 'react-native-navigation';
+
 const App: () => React$Node = () => {
   const [theme, setTheme] = useState(THEME_DATA.C_THEME_MODE);
   const {setStackRoot} = useNavigation();
@@ -23,6 +28,13 @@ const App: () => React$Node = () => {
     try {
       await AsyncStorage.setItem(THEME_MODE, theme);
       THEME_DATA.C_THEME_MODE = theme;
+      console.log(darkThemeColor(B_BOTTOMNAV));
+      Navigation.mergeOptions('com.mk1er', {
+        bottomTabs: {
+          backgroundColor: darkThemeColor(B_BOTTOMNAV),
+          visible: false,
+        },
+      });
       goToHome(setStackRoot);
     } catch (error) {
       // Error saving data

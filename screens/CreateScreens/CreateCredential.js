@@ -16,6 +16,8 @@ import ColorPicker from '../Components/ColorPicker';
 import Input from '../Components/Input';
 import InputTextArea from '../Components/InputTextArea';
 import THEME_DATA from '../Globals/ThemeData';
+// import realm from '../../database/realm';
+// import {CREDENTIALS_SCHEMA} from '../Globals/Database';
 
 const App: () => React$Node = () => {
   const colors = [
@@ -74,7 +76,24 @@ const App: () => React$Node = () => {
   const BUTTONS = THEME_DATA.BUTTONS;
 
   function createCredential() {
-    console.log('created credential');
+    console.log('date: ', new Date());
+    // try {
+    //   if (realm) {
+    //     realm.write(() => {
+    //       realm.create(CREDENTIALS_SCHEMA, {
+    //         id: new Date(),
+    //         themeData: currentColor,
+    //         title: title,
+    //         email: email,
+    //         password: password,
+    //         details: otherData,
+    //         others: '',
+    //       });
+    //     });
+    //   }
+    // } catch (e) {
+    //   console.log('CREATE CREDENTIAL', e);
+    // }
   }
 
   function selectedUpdate(element) {
