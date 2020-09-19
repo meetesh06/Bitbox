@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import {darkThemeColor, darkTheme} from '../Globals/Functions';
 import {B_CONTAINER} from '../Globals/Colors';
@@ -105,8 +106,18 @@ const App: () => React$Node = () => {
   }
 
   useEffect(() => {
-    console.log(realm.objects(CREDENTIALS_SCHEMA));
-  });
+    const backAction = () => {
+      Navigation.dismissModal(componentId);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [componentId]);
 
   return (
     <>
@@ -117,11 +128,12 @@ const App: () => React$Node = () => {
         }}>
         <TopBar title="Create Credential" context={componentId} />
         <ScrollView
+          showsHorizontalScrollIndicator={false}
           style={styles.preview}
           decelerationRate={0}
           snapToInterval={DISPLAY_WIDTH} //your element width
           snapToAlignment={'center'}
-          horizontal={true} >
+          horizontal={true}>
           <CredentialCard
             id="12as325"
             title={title}

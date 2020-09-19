@@ -35,3 +35,4 @@ export const B_INPUT_TEXT = {
   light: '#1f1f1f',
   dark: '#efefef',
 };
+

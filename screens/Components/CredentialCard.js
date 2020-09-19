@@ -14,6 +14,7 @@ const App: () => React$Node = ({
   content,
   colors,
   style,
+  horizontalList,
 }) => {
   return (
     <>
@@ -22,6 +23,7 @@ const App: () => React$Node = ({
           width: fullView ? DISPLAY_WIDTH : undefined,
           justifyContent: fullView ? 'center' : undefined,
           alignItems: fullView ? 'center' : undefined,
+          padding: horizontalList ? 5 : undefined,
         }}>
         <LinearGradient
           colors={colors}

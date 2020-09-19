@@ -13,7 +13,10 @@ const App: () => React$Node = ({selectedUpdate, colors}) => {
   }
   return (
     <View style={styles.container}>
-      <ScrollView horizontal={true} style={styles.scrollView}>
+      <ScrollView
+        showsHorizontalScrollIndicator={false}
+        horizontal={true}
+        style={styles.scrollView}>
         {colors.map((element, index) => {
           return (
             <TouchableOpacity
