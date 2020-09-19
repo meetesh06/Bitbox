@@ -6,18 +6,21 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  CheckBox,
   // Dimensions,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import {useNavigation} from 'react-native-navigation-hooks';
-import {PRIMARY} from './Globals/Colors';
 import THEME_DATA from './Globals/ThemeData';
-import {ignoreTheme} from './Globals/Functions';
+import {ignoreTheme, darkThemeColor} from './Globals/Functions';
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 
+import {B_CONTAINER, B_HIGHLIGHT} from './Globals/Colors';
+
+import CheckBox from '@react-native-community/checkbox';
+
 import {MASTER_KEY, SALT} from './Globals/Database';
+import TopBar from './Components/TopBar';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
@@ -96,10 +99,12 @@ const App: () => React$Node = () => {
   }
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.topBar}>
-          <Text style={styles.topBarText}>Master Password</Text>
-        </View>
+      <View
+        style={{
+          ...styles.container,
+          backgroundColor: darkThemeColor(B_CONTAINER),
+        }}>
+        <TopBar title="Sign Up" />
         <ScrollView style={styles.scrollView}>
           <View style={styles.inputContainerFirst}>
             <Hideo
@@ -126,20 +131,25 @@ const App: () => React$Node = () => {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.otpText}>
-              <FontAwesomeIcon name="chevron-right" size={10} color="#052a37" />{' '}
+            <Text
+              style={{...styles.otpText, color: darkThemeColor(B_HIGHLIGHT)}}>
+              <FontAwesomeIcon
+                name="chevron-right"
+                size={10}
+                color={darkThemeColor(B_HIGHLIGHT)}
+              />{' '}
               Password must be atleast 8 characters {'\n'}
               <FontAwesomeIcon
                 name="chevron-right"
                 size={10}
-                color="#052a37"
+                color={darkThemeColor(B_HIGHLIGHT)}
               />{' '}
               must contain at least 1 uppercase letter, 1 lowercase letter, and
               1 number {'\n'}
               <FontAwesomeIcon
                 name="chevron-right"
                 size={10}
-                color="#052a37"
+                color={darkThemeColor(B_HIGHLIGHT)}
               />{' '}
               Can contain special characters {'\n'}
             </Text>
@@ -150,13 +160,24 @@ const App: () => React$Node = () => {
               flexWrap: 'wrap',
             }}>
             <CheckBox
+              tintColors={{
+                true: darkThemeColor(B_HIGHLIGHT),
+                false: darkThemeColor(B_HIGHLIGHT),
+              }}
               value={remoteLocking}
               onValueChange={(val) => setRemoteLocking(val)}
             />
-            <Text style={styles.checkboxText}>Enable Remote Locking.</Text>
+            <Text
+              style={{
+                ...styles.checkboxText,
+                color: darkThemeColor(B_HIGHLIGHT),
+              }}>
+              Enable Remote Locking.
+            </Text>
           </View>
           <View>
-            <Text style={styles.infoText1}>
+            <Text
+              style={{...styles.infoText1, color: darkThemeColor(B_HIGHLIGHT)}}>
               Your master password will be used to encrypt all your data. It is
               a good idea to write it down somewhere safe.
             </Text>
@@ -240,8 +261,8 @@ const styles = StyleSheet.create({
   checkboxText: {
     color: '#052a37',
     fontSize: 13,
+    paddingTop: 7,
     fontFamily: 'Poppins-Bold',
-    alignSelf: 'center',
   },
   infoText1: {
     color: '#052a37',

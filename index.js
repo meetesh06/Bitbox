@@ -11,11 +11,16 @@ import BeamScreen from './screens/BeamScreen';
 import Theme from './screens/Theme';
 import Settings from './screens/Settings';
 import CreateCredential from './screens/CreateScreens/CreateCredential';
-import AsyncStorage from '@react-native-community/async-storage';
-import {THEME_MODE} from './screens/Globals/AsyncStorageEnum';
-import THEME_DATA from './screens/Globals/ThemeData';
-import {updateThemeMode, updateDatabaseManager} from './screens/Globals/Functions';
+import {
+  updateThemeMode,
+  updateDatabaseManager,
+  updateCommonData,
+} from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
+import Realm from 'realm';
+// Realm.deleteFile({
+
+// });
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -189,32 +194,35 @@ Navigation.events().registerModalDismissedListener(({componentName}) => {
 
 let promise = new Promise(async function (resolve, reject) {
   await updateThemeMode();
-  await updateDatabaseManager();
   resolve();
 });
 
 Navigation.events().registerAppLaunchedListener(() => {
   promise.then((result) => {
-    Navigation.setRoot({
-      root: {
-        stack: {
-          children: [
-            {
-              component: {
-                name: 'com.mk1er.Theme',
-                options: {
-                  statusBar: {
-                    visible: true,
-                  },
-                  topBar: {
-                    visible: 'false',
+    updateDatabaseManager(() => {
+      updateCommonData(() => {
+        Navigation.setRoot({
+          root: {
+            stack: {
+              children: [
+                {
+                  component: {
+                    name: 'com.mk1er.Theme',
+                    options: {
+                      statusBar: {
+                        visible: true,
+                      },
+                      topBar: {
+                        visible: 'false',
+                      },
+                    },
                   },
                 },
-              },
+              ],
             },
-          ],
-        },
-      },
+          },
+        });
+      });
     });
   });
 });

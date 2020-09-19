@@ -1,11 +1,11 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
   TouchableOpacity,
   Text,
-  // Dimensions,
+  Dimensions,
 } from 'react-native';
 import {darkThemeColor, darkTheme} from '../Globals/Functions';
 import {B_CONTAINER} from '../Globals/Colors';
@@ -16,8 +16,10 @@ import ColorPicker from '../Components/ColorPicker';
 import Input from '../Components/Input';
 import InputTextArea from '../Components/InputTextArea';
 import THEME_DATA from '../Globals/ThemeData';
-// import realm from '../../database/realm';
-// import {CREDENTIALS_SCHEMA} from '../Globals/Database';
+import RealmManager from '../../database/realm';
+import {CREDENTIALS_SCHEMA} from '../Globals/Database';
+import {Navigation} from 'react-native-navigation';
+const DISPLAY_WIDTH = Dimensions.get('window').width;
 
 const App: () => React$Node = () => {
   const colors = [
@@ -74,31 +76,38 @@ const App: () => React$Node = () => {
   const [password, setPassword] = useState('');
   const [otherData, setOtherData] = useState('');
   const BUTTONS = THEME_DATA.BUTTONS;
+  const realm = RealmManager.getInstance();
 
   function createCredential() {
     console.log('date: ', new Date());
-    // try {
-    //   if (realm) {
-    //     realm.write(() => {
-    //       realm.create(CREDENTIALS_SCHEMA, {
-    //         id: new Date(),
-    //         themeData: currentColor,
-    //         title: title,
-    //         email: email,
-    //         password: password,
-    //         details: otherData,
-    //         others: '',
-    //       });
-    //     });
-    //   }
-    // } catch (e) {
-    //   console.log('CREATE CREDENTIAL', e);
-    // }
+    try {
+      if (realm) {
+        realm.write(() => {
+          realm.create(CREDENTIALS_SCHEMA, {
+            id: new Date().toString(),
+            themeData: JSON.stringify(currentColor),
+            title: title,
+            email: email,
+            password: password,
+            details: otherData,
+            others: '',
+          });
+          Navigation.dismissModal(componentId);
+        });
+      }
+    } catch (e) {
+      console.log('CREATE CREDENTIAL', e);
+    }
   }
 
   function selectedUpdate(element) {
     setCurrentColor(element);
   }
+
+  useEffect(() => {
+    console.log(realm.objects(CREDENTIALS_SCHEMA));
+  });
+
   return (
     <>
       <ScrollView
@@ -107,15 +116,37 @@ const App: () => React$Node = () => {
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
         <TopBar title="Create Credential" context={componentId} />
-        <View style={styles.preview}>
+        <ScrollView
+          style={styles.preview}
+          decelerationRate={0}
+          snapToInterval={DISPLAY_WIDTH} //your element width
+          snapToAlignment={'center'}
+          horizontal={true} >
           <CredentialCard
             id="12as325"
             title={title}
             content="mee***@gmail.com"
             style={1}
+            fullView
             colors={currentColor.colorData}
           />
-        </View>
+          <CredentialCard
+            id="12as325"
+            title={title}
+            content="mee***@gmail.com"
+            style={2}
+            fullView
+            colors={currentColor.colorData}
+          />
+          <CredentialCard
+            id="12as325"
+            title={title}
+            content="mee***@gmail.com"
+            style={3}
+            fullView
+            colors={currentColor.colorData}
+          />
+        </ScrollView>
         <ColorPicker selectedUpdate={selectedUpdate} colors={colors} />
         <View style={styles.inputsContainer}>
           <Input title="Title" icon="pencil" value={title} updater={setTitle} />
@@ -154,7 +185,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   preview: {
-    alignItems: 'center',
     paddingTop: 30,
   },
   inputsContainer: {

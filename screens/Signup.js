@@ -6,16 +6,20 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  // Dimensions,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import OTPTextInput from 'react-native-otp-textinput';
 import {useNavigation} from 'react-native-navigation-hooks';
-import {goToHome} from './Navigators/HomeNav';
+import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+
+import {PRIMARY, WHITE, B_CONTAINER, B_HIGHLIGHT} from './Globals/Colors';
 
 import THEME_DATA from './Globals/ThemeData';
-import {ignoreTheme} from './Globals/Functions';
+import {ignoreTheme, darkThemeColor} from './Globals/Functions';
+import {USER_NAME, USER_EMAIL, USER_AGE} from './Globals/AsyncStorageEnum';
+
+import TopBar from './Components/TopBar';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
@@ -37,7 +41,7 @@ const App: () => React$Node = () => {
     state(val);
   }
 
-  async function handleSignup() {
+  function handleNext() {
     setStackRoot({
       component: {
         name: 'com.mk1er.Master',
@@ -69,12 +73,41 @@ const App: () => React$Node = () => {
       },
     });
   }
+
+  function storeDataAsync(call) {
+    Promise.all([
+      RNSecureKeyStore.set(USER_NAME, name, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(USER_EMAIL, email, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(USER_AGE, age, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+    ])
+      .then((res) => {
+        call();
+      })
+      .catch((err) => {
+        console.log(err, 'THERE WAS AN ERROR ');
+      });
+  }
+
+  function handleSignup() {
+    // MAKE SERVER CALL AND VERIFY OTP, IF ALL CHECKS OUT DO THIS
+    storeDataAsync(() => {
+      handleNext();
+    });
+  }
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.topBar}>
-          <Text style={styles.topBarText}>Sign Up</Text>
-        </View>
+      <View
+        style={{
+          ...styles.container,
+          backgroundColor: darkThemeColor(B_CONTAINER),
+        }}>
+        <TopBar title="Sign Up" />
         <ScrollView style={styles.scrollView}>
           <View style={styles.inputContainerFirst}>
             <Hideo
@@ -82,7 +115,7 @@ const App: () => React$Node = () => {
               iconName={'user'}
               placeholder="Name"
               iconColor={'white'}
-              iconBackgroundColor={'#1e88ae'}
+              iconBackgroundColor={PRIMARY}
               inputStyle={{
                 ...styles.inputStyle,
                 borderBottomWidth: nameError ? 2 : 0,
@@ -100,7 +133,7 @@ const App: () => React$Node = () => {
               iconName={'envelope'}
               placeholder="Email"
               iconColor={'white'}
-              iconBackgroundColor={'#1e88ae'}
+              iconBackgroundColor={PRIMARY}
               inputStyle={{
                 ...styles.inputStyle,
                 borderBottomWidth: emailError ? 2 : 0,
@@ -136,7 +169,8 @@ const App: () => React$Node = () => {
             />
           </View>
           <View style={styles.inputContainer}>
-            <Text style={styles.otpText}>
+            <Text
+              style={{...styles.otpText, color: darkThemeColor(B_HIGHLIGHT)}}>
               An OTP will be sent to your email address, please enter the code
               to continue
             </Text>
@@ -196,20 +230,7 @@ const App: () => React$Node = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  topBar: {
-    borderBottomColor: '#052a37',
-    borderBottomWidth: 3,
-    justifyContent: 'center',
-    paddingTop: 10,
-    paddingBottom: 5,
-    paddingLeft: 15,
-  },
-  topBarText: {
-    color: '#052a37',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 32,
+    backgroundColor: WHITE,
   },
   scrollView: {
     paddingLeft: 15,
@@ -228,7 +249,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f1f1',
     borderBottomColor: 'red',
   },
-
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',

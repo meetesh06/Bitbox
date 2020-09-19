@@ -1,12 +1,8 @@
 import Realm from 'realm';
-import CREDENTIALS_SCHEMA from '../screens/Globals/Database';
+import {CREDENTIALS_SCHEMA} from '../screens/Globals/Database';
 // import {generateKey} from '../screens/Globals/Functions';
-// import CommonDataManager from '../screens/Globals/CommonDataManager';
-// import {convertStringToByteArray} from '../screens/Globals/Functions';
-
-// let commonData = CommonDataManager.getInstance();
-
-// const ENCRYPTION_KEY = convertStringToByteArray(commonData.getMasterKey());
+import CommonDataManager from '../screens/Globals/CommonDataManager';
+import {convertStringToByteArray} from '../screens/Globals/Functions';
 
 class Credentials extends Realm.Object {}
 
@@ -24,7 +20,22 @@ Credentials.schema = {
   },
 };
 
-export default new Realm({
-  schema: [Credentials],
-  // encryptionKey: ENCRYPTION_KEY,
-});
+// export default new Realm({
+//   schema: [Credentials],
+//   // encryptionKey: ENCRYPTION_KEY,
+// });
+
+export default class RealmManager {
+  static _realmInstance = null;
+
+  static getInstance() {
+    if (RealmManager._realmInstance == null) {
+      let commonData = CommonDataManager.getInstance();
+      RealmManager._realmInstance = new Realm({
+        schema: [Credentials.schema],
+        encryptionKey: convertStringToByteArray(commonData.getMasterKey()),
+      });
+    }
+    return this._realmInstance;
+  }
+}

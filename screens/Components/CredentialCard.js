@@ -1,71 +1,83 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  // Dimensions,
-} from 'react-native';
+import {StyleSheet, View, Text, Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
-const App: () => React$Node = ({id, title, content, colors, style}) => {
+const DISPLAY_WIDTH = Dimensions.get('window').width;
+// const DISPLAY_HEIGHT = Dimensions.get('window').height;
+
+const App: () => React$Node = ({
+  fullView,
+  id,
+  title,
+  content,
+  colors,
+  style,
+}) => {
   return (
     <>
-      <LinearGradient
-        colors={colors}
-        useAngle={true}
-        angle={-18}
+      <View
         style={{
-          ...styles.gradient,
-          width: style === 1 ? '70%' : style === 2 ? '40%' : '35%',
-          height: style === 1 ? 150 : style === 2 ? '40%' : 70,
+          width: fullView ? DISPLAY_WIDTH : undefined,
+          justifyContent: fullView ? 'center' : undefined,
+          alignItems: fullView ? 'center' : undefined,
         }}>
-        <View
+        <LinearGradient
+          colors={colors}
+          useAngle={true}
+          angle={-18}
           style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 15,
+            ...styles.gradient,
+            width: style === 1 ? 240 : style === 2 ? 120 : 120,
+            height: style === 1 ? 120 : style === 2 ? 120 : 60,
           }}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
+          <View
             style={{
-              fontFamily: 'Poppins-Bold',
-              fontSize: style === 1 ? 20 : style === 2 ? 15 : 15,
-              color: '#fff',
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 15,
             }}>
-            {title === '' ? 'Card Title' : title}
-          </Text>
-          {style !== 3 && (
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
               style={{
-                fontFamily: 'Poppins-Regular',
-                fontSize: style === 1 ? 14 : style === 2 ? 10 : 10,
-                marginTop: 5,
+                fontFamily: 'Poppins-Bold',
+                fontSize: style === 1 ? 20 : style === 2 ? 15 : 15,
                 color: '#fff',
               }}>
-              {content}
+              {title === '' ? 'Card Title' : title}
             </Text>
-          )}
-        </View>
+            {style !== 3 && (
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  fontFamily: 'Poppins-Regular',
+                  fontSize: style === 1 ? 14 : style === 2 ? 10 : 10,
+                  marginTop: 5,
+                  color: '#fff',
+                }}>
+                {content}
+              </Text>
+            )}
+          </View>
 
-        <View
-          style={{
-            position: 'absolute',
-            bottom: 10,
-            right: 10,
-          }}>
-          <FontAwesomeIcon
-            name="unlock"
-            size={style !== 3 ? 18 : 12}
-            color={'#fff'}
-          />
-        </View>
-      </LinearGradient>
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 10,
+              right: 10,
+            }}>
+            <FontAwesomeIcon
+              name="unlock"
+              size={style !== 3 ? 18 : 12}
+              color={'#fff'}
+            />
+          </View>
+        </LinearGradient>
+      </View>
     </>
   );
 };

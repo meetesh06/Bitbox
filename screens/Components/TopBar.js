@@ -9,14 +9,16 @@ const App: () => React$Node = ({title, context}) => {
   return (
     <>
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => Navigation.dismissModal(context)}>
-          <FontAwesomeIcon
-            style={styles.btn}
-            name="chevron-left"
-            size={20}
-            color={darkThemeColor(B_TOPBAR_TITLE)}
-          />
-        </TouchableOpacity>
+        {context && (
+          <TouchableOpacity onPress={() => Navigation.dismissModal(context)}>
+            <FontAwesomeIcon
+              style={styles.btn}
+              name="chevron-left"
+              size={20}
+              color={darkThemeColor(B_TOPBAR_TITLE)}
+            />
+          </TouchableOpacity>
+        )}
         <Text
           style={{
             ...styles.title,

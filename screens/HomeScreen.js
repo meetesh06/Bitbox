@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -13,9 +13,19 @@ import Fab from 'rn-fab';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from 'react-native-navigation-hooks';
 import {useNavigationCommandComplete} from 'react-native-navigation-hooks';
+import TopBar from './Components/TopBar';
+import CommonDataManager from './Globals/CommonDataManager';
+
+const HorizontalListView: () => React$Node = () => {
+  render(
+
+  );
+}
+
 
 const App: () => React$Node = () => {
   const {showOverlay, showModal} = useNavigation();
+  const [topBarTitle, setTopBarTitle] = useState('Hello');
   const [overlay, setOverlay] = useState(false);
   const actions = [
     // main button
@@ -27,7 +37,7 @@ const App: () => React$Node = () => {
     {
       text: 'Others',
       icon: <FontAwesomeIcon name="pencil" color={WHITE} />,
-      name: 'credential',
+      name: 'others',
       color: ACCENT,
     },
     {
@@ -37,6 +47,8 @@ const App: () => React$Node = () => {
       color: ACCENT,
     },
   ];
+
+  const commonData = CommonDataManager.getInstance();
 
   useNavigationCommandComplete(({commandName}) => {
     if (commandName === 'dismissOverlay') {
@@ -92,6 +104,10 @@ const App: () => React$Node = () => {
     });
   }
 
+  useEffect(() => {
+    setTopBarTitle('Hello, ' + commonData.getUsername().split(' ')[0]);
+  }, [commonData]);
+
   return (
     <>
       <ScrollView
@@ -100,21 +116,8 @@ const App: () => React$Node = () => {
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
-        <Text
-          style={{
-            height: 900,
-            color: '#fff',
-          }}>
-          Home Screen
-        </Text>
+        <TopBar title={topBarTitle} />
       </ScrollView>
-      {/* <FAB
-        buttonColor={PRIMARY}
-        iconTextColor="#FFFFFF"
-        onClickAction={showCreateOverlay}
-        visible={!overlay}
-        iconTextComponent={<FontAwesomeIcon name="pencil" />}
-      /> */}
       <Fab
         actions={actions}
         style={{right: 40, bottom: 80}}
@@ -122,6 +125,8 @@ const App: () => React$Node = () => {
         onPress={(name) => {
           if (name === 'credential') {
             navigateCredential();
+          } else {
+            showCreateOverlay();
           }
           // showCreateOverlay();
         }}
