@@ -207,7 +207,7 @@ Navigation.events().registerAppLaunchedListener(() => {
               children: [
                 {
                   component: {
-                    name: 'com.mk1er.Theme',
+                    name: 'com.mk1er.Google',
                     options: {
                       statusBar: {
                         visible: true,

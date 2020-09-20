@@ -28,6 +28,9 @@ import CredentialCard from './Components/CredentialCard';
 import {CREDENTIALS_SCHEMA} from './Globals/Database';
 import RealmManager from '../database/realm';
 
+import GDrive from 'react-native-google-drive-api-wrapper';
+import {GoogleSignin} from '@react-native-community/google-signin';
+
 const HorizontalListView: () => React$Node = ({
   title,
   elements,
@@ -53,7 +56,9 @@ const HorizontalListView: () => React$Node = ({
         {elements &&
           elements.map((element) => {
             return (
-              <TouchableOpacity onPress={() => handler(element)}>
+              <TouchableOpacity
+                key={element.id}
+                onPress={() => handler(element)}>
                 <CredentialCard
                   id={element.id}
                   title={element.title}
@@ -164,7 +169,44 @@ const App: () => React$Node = () => {
       .sorted('id', true)
       .slice(0, size);
     setCredentialList(items);
+    console.log(realm.path);
   }, [realm, update]);
+
+  useEffect(() => {
+    // GDrive.setAccessToken(accessToken);
+    async function getTokens() {
+      try {
+        const tokens = await GoogleSignin.getTokens();
+        console.log('USING TOKEN: ' + tokens.accessToken);
+        GDrive.setAccessToken(tokens.accessToken);
+        GDrive.init();
+        console.log(GDrive.isInitialized());
+
+        // const contents = 'Tis is a test';
+        // GDrive.files
+        //   .createFileMultipart(
+        //     contents,
+        //     'text/plain',
+        //     {
+        //       parents: ['root'],
+        //       name: 'test.txt',
+        //     },
+        //     false,
+        //   )
+        //   .then((val) => {
+        //     console.log(val);
+        //   });
+
+        GDrive.files.list({q: "'root' in parents"}).then((val) => {
+          console.log(val);
+        });
+        // console.log(tokens);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    getTokens();
+  });
 
   return (
     <>
