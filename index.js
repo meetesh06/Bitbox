@@ -18,9 +18,9 @@ import {
 } from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
 import Realm from 'realm';
-// Realm.deleteFile({
+Realm.deleteFile({
 
-// });
+});
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -199,15 +199,15 @@ let promise = new Promise(async function (resolve, reject) {
 
 Navigation.events().registerAppLaunchedListener(() => {
   promise.then((result) => {
-    updateDatabaseManager(() => {
-      updateCommonData(() => {
+    updateCommonData(() => {
+      updateDatabaseManager(() => {
         Navigation.setRoot({
           root: {
             stack: {
               children: [
                 {
                   component: {
-                    name: 'com.mk1er.Google',
+                    name: 'com.mk0er.Init',
                     options: {
                       statusBar: {
                         visible: true,

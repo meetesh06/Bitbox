@@ -6,6 +6,9 @@ export default class CommonDataManager {
   _username = null;
   _email = null;
   _age = null;
+  _remote = false;
+  _signedIn = false;
+  _masterKeySet = false;
 
   /**
    * @returns {CommonDataManager} singleton
@@ -54,5 +57,29 @@ export default class CommonDataManager {
 
   setAge(age) {
     this._age = age;
+  }
+
+  getRemote() {
+    return this._remote;
+  }
+
+  setRemote(remote) {
+    this._remote = remote;
+  }
+
+  getSignedIn() {
+    return this._signedIn;
+  }
+
+  setSignedIn(signedIn) {
+    this._signedIn = signedIn;
+  }
+
+  getMasterKeyStatus() {
+    return this._masterKeySet;
+  }
+
+  setMasterKeyStatus(status) {
+    this._masterKeySet = status;
   }
 }

@@ -15,11 +15,17 @@ import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme} from './Globals/Functions';
 
+import {REMOTE_BACKUP, REMOTE_USER_DATA} from './Globals/AsyncStorageEnum';
+import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const BUTTONS = THEME_DATA.BUTTONS;
-  function handleSignup() {
+  async function handleSignup() {
     // SET CLOUD STORAGE TO NO
+    await RNSecureKeyStore.set(REMOTE_BACKUP, false, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
     handleNextPage();
   }
 
@@ -60,9 +66,12 @@ const App: () => React$Node = () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      // this.setState({userInfo});
-      console.log(userInfo);
-      // STORE TOKEN LOCALLY
+      await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      });
+      await RNSecureKeyStore.set(REMOTE_USER_DATA, JSON.stringify(userInfo), {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      });
       handleNextPage();
     } catch (error) {
       console.log(error);
@@ -77,6 +86,20 @@ const App: () => React$Node = () => {
       }
     }
   }
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
+      webClientId:
+        '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+      offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+      // hostedDomain: '', // specifies a hosted domain restriction
+      // loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
+      forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
+      // accountName: '', // [Android] specifies an account name on the device that should be used
+      // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+    });
+  }, []);
 
   // useEffect((create) => {
   //   async function isSignedIn() {
