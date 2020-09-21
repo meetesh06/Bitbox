@@ -3,19 +3,10 @@ import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
   // Dimensions,
 } from 'react-native';
 import {darkThemeColor} from './Globals/Functions';
-import {
-  B_CONTAINER,
-  PRIMARY,
-  WHITE,
-  ACCENT,
-  B_TOPBAR_TITLE,
-} from './Globals/Colors';
+import {B_CONTAINER, PRIMARY, WHITE, ACCENT} from './Globals/Colors';
 // import FAB from 'react-native-fab';
 import Fab from 'rn-fab';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -24,62 +15,19 @@ import {useNavigationCommandComplete} from 'react-native-navigation-hooks';
 import TopBar from './Components/TopBar';
 import CommonDataManager from './Globals/CommonDataManager';
 
-import CredentialCard from './Components/CredentialCard';
+import HorizontalListView from './Components/HorizontalListView';
 import {CREDENTIALS_SCHEMA} from './Globals/Database';
 import RealmManager from '../database/realm';
 
 import GDrive from 'react-native-google-drive-api-wrapper';
 import {GoogleSignin} from '@react-native-community/google-signin';
 
-const HorizontalListView: () => React$Node = ({
-  title,
-  elements,
-  elementContentKey,
-  handler,
-}) => {
-  return (
-    <View
-      style={{
-        marginTop: 10,
-        marginBottom: 10,
-      }}>
-      <Text
-        style={{
-          padding: 10,
-          fontSize: 18,
-          fontFamily: 'Poppins-Bold',
-          color: darkThemeColor(B_TOPBAR_TITLE),
-        }}>
-        {title}
-      </Text>
-      <ScrollView showsHorizontalScrollIndicator={false} horizontal={true}>
-        {elements &&
-          elements.map((element) => {
-            return (
-              <TouchableOpacity
-                key={element.id}
-                onPress={() => handler(element)}>
-                <CredentialCard
-                  id={element.id}
-                  title={element.title}
-                  content={element[elementContentKey]}
-                  style={3}
-                  horizontalList
-                  colors={JSON.parse(element.themeData).colorData}
-                />
-              </TouchableOpacity>
-            );
-          })}
-      </ScrollView>
-    </View>
-  );
-};
-
 const App: () => React$Node = () => {
   const {showOverlay, showModal} = useNavigation();
   const [topBarTitle, setTopBarTitle] = useState('Hello');
   const [credentialList, setCredentialList] = useState([]);
   const [update, setUpdate] = useState(true);
+  const [loadingContent, setLoadingContent] = useState(true);
   const actions = [
     // main button
     {
@@ -124,7 +72,6 @@ const App: () => React$Node = () => {
   }
 
   function showCreateOverlay() {
-    setOverlay(true);
     showOverlay({
       component: {
         id: 'CreateSelector',
@@ -163,13 +110,15 @@ const App: () => React$Node = () => {
   }, [commonData]);
 
   useEffect(() => {
+    // Update Local data
     let size = 10;
     let items = realm
       .objects(CREDENTIALS_SCHEMA)
       .sorted('id', true)
       .slice(0, size);
     setCredentialList(items);
-    console.log(realm.path);
+    setLoadingContent(false);
+    console.log(realm.path, items);
   }, [realm, update]);
 
   useEffect(() => {
@@ -221,9 +170,15 @@ const App: () => React$Node = () => {
           handler={() => {
             console.log('credentials click');
           }}
+          sectionHandler={() => {
+            console.log('credentials section click');
+          }}
           title={'CREDENTIALS'}
           elementContentKey={'email'}
           elements={credentialList}
+          style={3}
+          newHandler={navigateCredential}
+          loading={loadingContent}
         />
       </ScrollView>
       <Fab
@@ -236,7 +191,6 @@ const App: () => React$Node = () => {
           } else {
             showCreateOverlay();
           }
-          // showCreateOverlay();
         }}
       />
     </>

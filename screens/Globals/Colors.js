@@ -36,3 +36,54 @@ export const B_INPUT_TEXT = {
   dark: '#efefef',
 };
 
+export const CP_ALL = [
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+  {
+    colorData: ['#d02324', '#9b1335'],
+  },
+  {
+    colorData: ['blue', 'coral'],
+  },
+];
+
+export const CP_LOADING = ['#d6f2ff', '#b3b1b1'];
+
+export const CP_CREATE = ['blue', 'coral'];

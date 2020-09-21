@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useContext, useState, useEffect} from 'react';
 import {
   StyleSheet,
@@ -9,7 +10,7 @@ import {
   BackHandler,
 } from 'react-native';
 import {darkThemeColor, darkTheme} from '../Globals/Functions';
-import {B_CONTAINER} from '../Globals/Colors';
+import {B_CONTAINER, CP_ALL} from '../Globals/Colors';
 import {NavigationContext} from 'react-native-navigation-hooks';
 import TopBar from '../Components/TopBar';
 import CredentialCard from '../Components/CredentialCard';
@@ -23,55 +24,8 @@ import {Navigation} from 'react-native-navigation';
 const DISPLAY_WIDTH = Dimensions.get('window').width;
 
 const App: () => React$Node = () => {
-  const colors = [
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-    {
-      colorData: ['#d02324', '#9b1335'],
-    },
-    {
-      colorData: ['blue', 'coral'],
-    },
-  ];
   const {componentId} = useContext(NavigationContext);
-  const [currentColor, setCurrentColor] = useState(colors[0]);
+  const [currentColor, setCurrentColor] = useState(CP_ALL[0]);
   const [title, setTitle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -137,7 +91,7 @@ const App: () => React$Node = () => {
           <CredentialCard
             id="12as325"
             title={title}
-            content="mee***@gmail.com"
+            content={email === '' ? 'john***@mail.com' : email}
             style={1}
             fullView
             colors={currentColor.colorData}
@@ -145,7 +99,7 @@ const App: () => React$Node = () => {
           <CredentialCard
             id="12as325"
             title={title}
-            content="mee***@gmail.com"
+            content={email === '' ? 'john***@mail.com' : email}
             style={2}
             fullView
             colors={currentColor.colorData}
@@ -153,13 +107,13 @@ const App: () => React$Node = () => {
           <CredentialCard
             id="12as325"
             title={title}
-            content="mee***@gmail.com"
+            content={email === '' ? 'john***@mail.com' : email}
             style={3}
             fullView
             colors={currentColor.colorData}
           />
         </ScrollView>
-        <ColorPicker selectedUpdate={selectedUpdate} colors={colors} />
+        <ColorPicker selectedUpdate={selectedUpdate} colors={CP_ALL} />
         <View style={styles.inputsContainer}>
           <Input title="Title" icon="pencil" value={title} updater={setTitle} />
           <Input
@@ -181,9 +135,19 @@ const App: () => React$Node = () => {
           />
           <View style={styles.bottomButtonContainer}>
             <TouchableOpacity
-              style={darkTheme(BUTTONS.BUTTON4, 'btn')}
+              style={{
+                ...darkTheme(BUTTONS.BUTTON4, 'btn'),
+                borderColor: title === '' ? '#bebebe' : '#1e88ae',
+              }}
+              disabled={title === ''}
               onPress={createCredential}>
-              <Text style={darkTheme(BUTTONS.BUTTON4, 'text')}>CREATE</Text>
+              <Text
+                style={{
+                  ...darkTheme(BUTTONS.BUTTON4, 'text'),
+                  color: title === '' ? '#bebebe' : '#1e88ae',
+                }}>
+                CREATE
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

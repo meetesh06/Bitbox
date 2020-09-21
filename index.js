@@ -17,10 +17,10 @@ import {
   updateCommonData,
 } from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
-import Realm from 'realm';
-Realm.deleteFile({
+// import Realm from 'realm';
+// Realm.deleteFile({
 
-});
+// });
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
