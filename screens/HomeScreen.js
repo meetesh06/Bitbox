@@ -49,6 +49,8 @@ const App: () => React$Node = () => {
     },
   ];
 
+  const [userUsesCloud, setUserUsesCloud] = useState(false);
+
   const commonData = CommonDataManager.getInstance();
   const realm = RealmManager.getInstance();
 
@@ -66,6 +68,22 @@ const App: () => React$Node = () => {
           topBar: {
             visible: false,
           },
+          // animations: {
+          //   showModal: {
+          //     alpha: {
+          //       from: 0,
+          //       to: 1,
+          //       duration: 600,
+          //     },
+          //   },
+          //   dismissModal: {
+          //     alpha: {
+          //       from: 1,
+          //       to: 0,
+          //       duration: 200,
+          //     },
+          //   },
+          // },
         },
       },
     });
@@ -111,7 +129,7 @@ const App: () => React$Node = () => {
 
   useEffect(() => {
     // Update Local data
-    let size = 10;
+    let size = 6;
     let items = realm
       .objects(CREDENTIALS_SCHEMA)
       .sorted('id', true)
@@ -121,41 +139,40 @@ const App: () => React$Node = () => {
     console.log(realm.path, items);
   }, [realm, update]);
 
+  // useEffect(() => {
+  //   // GDrive.setAccessToken(accessToken);
+  //   async function getTokens() {
+  //     try {
+  //       const tokens = await GoogleSignin.getTokens();
+  //       console.log('USING TOKEN: ' + tokens.accessToken);
+  //       GDrive.setAccessToken(tokens.accessToken);
+  //       GDrive.init();
+  //       console.log(GDrive.isInitialized());
+  //     } catch (e) {
+  //       console.log(e);
+  //     }
+  //   }
+  //   getTokens();
+  // });
   useEffect(() => {
-    // GDrive.setAccessToken(accessToken);
-    async function getTokens() {
-      try {
-        const tokens = await GoogleSignin.getTokens();
-        console.log('USING TOKEN: ' + tokens.accessToken);
-        GDrive.setAccessToken(tokens.accessToken);
-        GDrive.init();
-        console.log(GDrive.isInitialized());
-
-        // const contents = 'Tis is a test';
-        // GDrive.files
-        //   .createFileMultipart(
-        //     contents,
-        //     'text/plain',
-        //     {
-        //       parents: ['root'],
-        //       name: 'test.txt',
-        //     },
-        //     false,
-        //   )
-        //   .then((val) => {
-        //     console.log(val);
-        //   });
-
-        GDrive.files.list({q: "'root' in parents"}).then((val) => {
-          console.log(val);
-        });
-        // console.log(tokens);
-      } catch (e) {
-        console.log(e);
-      }
+    console.log('REMOTE: ', commonData.getRemote());
+    if (!commonData.getRemote()) {
+      return setUserUsesCloud(false);
     }
-    getTokens();
-  });
+    const signInCheck = async () => {
+      const isSignedIn = await GoogleSignin.isSignedIn();
+      if (!isSignedIn) {
+        try {
+          const userInfo = await GoogleSignin.signInSilently();
+          commonData.setRemoteUserData(userInfo);
+          console.log('USER INFO', userInfo);
+        } catch (error) {}
+      }
+    };
+    console.log('SIGN IN CHECK');
+
+    signInCheck();
+  }, [commonData]);
 
   return (
     <>

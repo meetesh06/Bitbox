@@ -17,10 +17,6 @@ import {
   updateCommonData,
 } from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
-// import Realm from 'realm';
-// Realm.deleteFile({
-
-// });
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
@@ -158,7 +154,7 @@ Navigation.registerComponent(
 
 Navigation.events().registerBottomTabSelectedListener(
   ({selectedTabIndex, unselectedTabIndex}) => {
-    if (selectedTabIndex == 1) {
+    if (selectedTabIndex === 1) {
       Navigation.showModal({
         stack: {
           children: [
@@ -199,8 +195,8 @@ let promise = new Promise(async function (resolve, reject) {
 
 Navigation.events().registerAppLaunchedListener(() => {
   promise.then((result) => {
-    updateCommonData(() => {
-      updateDatabaseManager(() => {
+    updateCommonData((loggedIn) => {
+      updateDatabaseManager((masterKeySet) => {
         Navigation.setRoot({
           root: {
             stack: {

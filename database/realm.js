@@ -31,6 +31,10 @@ export default class RealmManager {
   static getInstance() {
     if (RealmManager._realmInstance == null) {
       let commonData = CommonDataManager.getInstance();
+      if (!commonData.getMasterKeyStatus()) {
+        console.error('ATTEMPT CALL DB FILE USING BLANK KEY');
+        return null;
+      }
       RealmManager._realmInstance = new Realm({
         schema: [Credentials.schema],
         encryptionKey: convertStringToByteArray(commonData.getMasterKey()),

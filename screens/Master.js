@@ -22,6 +22,9 @@ import CheckBox from '@react-native-community/checkbox';
 import {MASTER_KEY, SALT} from './Globals/Database';
 import TopBar from './Components/TopBar';
 
+import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
+import Realm from 'realm';
+
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const [password, setPassword] = useState('');
@@ -90,11 +93,20 @@ const App: () => React$Node = () => {
       }),
     ])
       .then((res) => {
-        console.log(res);
-        nextScreen();
+        updateCommonData(() => {
+          updateDatabaseManager(() => {
+            try {
+              Realm.deleteFile({});
+              console.error('REMOVED OLD REALM DB');
+            } catch (e) {
+              console.log(e);
+            }
+            nextScreen();
+          });
+        });
       })
       .catch((err) => {
-        console.log(err, 'THERE WAS AN ERROR ');
+        console.error(err, 'THERE WAS AN ERROR ');
       });
   }
   return (

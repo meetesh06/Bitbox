@@ -15,17 +15,21 @@ import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme} from './Globals/Functions';
 
-import {REMOTE_BACKUP, REMOTE_USER_DATA} from './Globals/AsyncStorageEnum';
+import {REMOTE_BACKUP} from './Globals/AsyncStorageEnum';
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+
+import CommonDataManager from './Globals/CommonDataManager';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const BUTTONS = THEME_DATA.BUTTONS;
+  const commonData = CommonDataManager.getInstance();
   async function handleSignup() {
     // SET CLOUD STORAGE TO NO
-    await RNSecureKeyStore.set(REMOTE_BACKUP, false, {
+    await RNSecureKeyStore.set(REMOTE_BACKUP, 'false', {
       accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
     });
+    commonData.setRemote(false);
     handleNextPage();
   }
 
@@ -69,9 +73,8 @@ const App: () => React$Node = () => {
       await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
         accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
       });
-      await RNSecureKeyStore.set(REMOTE_USER_DATA, JSON.stringify(userInfo), {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      });
+      commonData.setRemote(true);
+      commonData.setRemoteUserData(userInfo);
       handleNextPage();
     } catch (error) {
       console.log(error);
@@ -100,16 +103,6 @@ const App: () => React$Node = () => {
       // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
     });
   }, []);
-
-  // useEffect((create) => {
-  //   async function isSignedIn() {
-  //     const signedIn = await GoogleSignin.isSignedIn();
-  //     if (signedIn) {
-  //       handleNextPage();
-  //     }
-  //   }
-  //   isSignedIn();
-  // });
 
   return (
     <>

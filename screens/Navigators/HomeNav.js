@@ -99,7 +99,7 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
                 alpha: {
                   from: 0,
                   to: 1,
-                  duration: 200,
+                  duration: 600,
                 },
               },
             },

@@ -10,7 +10,9 @@ const App: () => React$Node = ({title, context}) => {
     <>
       <View style={styles.container}>
         {context && (
-          <TouchableOpacity onPress={() => Navigation.dismissModal(context)}>
+          <TouchableOpacity
+            style={styles.btnContaner}
+            onPress={() => Navigation.dismissModal(context)}>
             <FontAwesomeIcon
               style={styles.btn}
               name="chevron-left"
@@ -39,6 +41,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     alignItems: 'center',
     flexDirection: 'row',
+  },
+  btnContaner: {
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   btn: {
     paddingRight: 20,

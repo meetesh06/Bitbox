@@ -18,7 +18,9 @@ var Aes = NativeModules.Aes;
 export const updateThemeMode = async () => {
   try {
     const value = await AsyncStorage.getItem(THEME_MODE);
-    console.log('THEME DATA:', value);
+    if (!value) {
+      return;
+    }
     THEME_DATA.C_THEME_MODE = value;
     THEME_DATA.UPDATED = true;
     return;
@@ -40,7 +42,6 @@ export const updateCommonData = (call) => {
           RNSecureKeyStore.get(REMOTE_BACKUP)
             .then(
               (remote) => {
-                commonData.setRemote(remote === 'true');
                 if (remote === 'true') {
                   GoogleSignin.configure({
                     scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
@@ -53,24 +54,25 @@ export const updateCommonData = (call) => {
                     // accountName: '', // [Android] specifies an account name on the device that should be used
                     // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
                   });
-                } else {
-                  console.log('remote - false');
                 }
+                commonData.setRemote(remote === 'true');
               },
+              // eslint-disable-next-line handle-callback-err
               (err) => {
+                console.error('REMOTE PAGE NEVER LOADED');
                 commonData.setRemote(false);
               },
             )
             .finally(() => {
-              call();
+              call(true);
             });
         });
       });
     },
     (err) => {
-      console.log('user not signed in');
+      // console.log('user not signed in');
       commonData.setSignedIn(false);
-      call();
+      call(false);
     },
   );
 };
@@ -116,7 +118,7 @@ export const updateDatabaseManager = (call) => {
     },
     (err) => {
       commonData.setMasterKeyStatus(false);
-      console.log('MASTER KEY NOT SET');
+      console.error('MASTER KEY NOT SET');
       call(false);
     },
   );

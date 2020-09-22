@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
+// import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
 import TypeWriter from 'react-native-typewriter';
 import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme} from './Globals/Functions';
+
+import LinearGradient from 'react-native-linear-gradient';
 
 import {goToHome} from './Navigators/HomeNav';
 import CommonDataManager from './Globals/CommonDataManager';
@@ -78,7 +80,10 @@ const App: () => React$Node = () => {
 
   useEffect(() => {
     if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
-      goToHome(push);
+      let timer1 = setTimeout(() => goToHome(push), 1000);
+      return () => {
+        clearTimeout(timer1);
+      };
     } else {
       setSignedIn(false);
     }
@@ -86,7 +91,7 @@ const App: () => React$Node = () => {
 
   return (
     <>
-      <AnimatedLinearGradient customColors={gradientStyles.bitbox} speed={8000}>
+      <LinearGradient colors={gradientStyles.bitbox} style={styles.container}>
         <View style={styles.logoContainer}>
           <Image
             style={styles.logoImg}
@@ -108,7 +113,7 @@ const App: () => React$Node = () => {
         </View>
 
         <View style={styles.bottomButtonContainer}>
-          {signedIn && <ActivityIndicator size="large" />}
+          {signedIn && <ActivityIndicator size="large" color="#fff" />}
           {!signedIn && (
             <TouchableOpacity
               style={ignoreTheme(BUTTONS.BUTTON1, 'btn')}
@@ -118,12 +123,15 @@ const App: () => React$Node = () => {
           )}
         </View>
         <Text style={styles.madeInIndiaText}>MADE IN INDIA</Text>
-      </AnimatedLinearGradient>
+      </LinearGradient>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   textContainer: {
     paddingLeft: 25,
     paddingRight: 25,
@@ -164,7 +172,7 @@ const styles = StyleSheet.create({
 });
 
 const gradientStyles = {
-  bitbox: ['rgb(57, 119, 222)', 'rgb(10, 147, 142)', 'rgb(29, 52, 134)'],
+  bitbox: ['#3977de', '#0a938e'],
 };
 
 export default App;

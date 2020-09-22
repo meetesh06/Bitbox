@@ -9,6 +9,7 @@ export default class CommonDataManager {
   _remote = false;
   _signedIn = false;
   _masterKeySet = false;
+  _remoteUserData = null;
 
   /**
    * @returns {CommonDataManager} singleton
@@ -81,5 +82,13 @@ export default class CommonDataManager {
 
   setMasterKeyStatus(status) {
     this._masterKeySet = status;
+  }
+
+  getRemoteUserData() {
+    return this._remoteUserData;
+  }
+
+  setRemoteUserData(data) {
+    this._remoteUserData = data;
   }
 }
