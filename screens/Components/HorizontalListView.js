@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import {darkThemeColor} from '../Globals/Functions';
 import {B_TOPBAR_TITLE, CP_LOADING, CP_CREATE} from '../Globals/Colors';
-// import FAB from 'react-native-fab';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
 import CredentialCard from '../Components/CredentialCard';
@@ -109,17 +108,18 @@ const App: () => React$Node = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
+    padding: 10,
   },
   sectionHeaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   sectionHeaderText: {
-    padding: 10,
     fontSize: 18,
     fontFamily: 'Poppins-Bold',
   },
   sectionHeaderIcon: {
+    paddingLeft: 10,
     top: -2,
   },
 });

@@ -10,6 +10,8 @@ export default class CommonDataManager {
   _signedIn = false;
   _masterKeySet = false;
   _remoteUserData = null;
+  _signedInSession = false;
+  _remoteTokens = null;
 
   /**
    * @returns {CommonDataManager} singleton
@@ -90,5 +92,21 @@ export default class CommonDataManager {
 
   setRemoteUserData(data) {
     this._remoteUserData = data;
+  }
+
+  getGoogleSignedInSession() {
+    return this._signedInSession;
+  }
+
+  setGoogleSignedInSession(status) {
+    this._signedInSession = status;
+  }
+
+  getRemoteTokens() {
+    return this._remoteTokens;
+  }
+
+  setRemoteTokens(status) {
+    this._remoteTokens = status;
   }
 }

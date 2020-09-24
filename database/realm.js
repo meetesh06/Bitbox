@@ -1,8 +1,8 @@
 import Realm from 'realm';
 import {CREDENTIALS_SCHEMA} from '../screens/Globals/Database';
-// import {generateKey} from '../screens/Globals/Functions';
 import CommonDataManager from '../screens/Globals/CommonDataManager';
 import {convertStringToByteArray} from '../screens/Globals/Functions';
+import {DATABASE_NAME} from '../screens/Globals/AsyncStorageEnum.js';
 
 class Credentials extends Realm.Object {}
 
@@ -20,26 +20,24 @@ Credentials.schema = {
   },
 };
 
-// export default new Realm({
-//   schema: [Credentials],
-//   // encryptionKey: ENCRYPTION_KEY,
-// });
-
 export default class RealmManager {
   static _realmInstance = null;
-
   static getInstance() {
-    if (RealmManager._realmInstance == null) {
-      let commonData = CommonDataManager.getInstance();
-      if (!commonData.getMasterKeyStatus()) {
-        console.error('ATTEMPT CALL DB FILE USING BLANK KEY');
-        return null;
-      }
-      RealmManager._realmInstance = new Realm({
-        schema: [Credentials.schema],
-        encryptionKey: convertStringToByteArray(commonData.getMasterKey()),
-      });
+    if (RealmManager._realmInstance === null || !this._realmInstance.isClosed) {
+      RealmManager.reIssueInstance();
     }
     return this._realmInstance;
+  }
+
+  static reIssueInstance() {
+    let commonData = CommonDataManager.getInstance();
+    if (!commonData.getMasterKeyStatus()) {
+      console.error('ATTEMPTED TO CALL DB FILE USING BLANK KEY');
+    }
+    RealmManager._realmInstance = new Realm({
+      schema: [Credentials.schema],
+      path: DATABASE_NAME,
+      encryptionKey: convertStringToByteArray(commonData.getMasterKey()),
+    });
   }
 }

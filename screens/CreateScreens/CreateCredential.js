@@ -31,10 +31,10 @@ const App: () => React$Node = () => {
   const [password, setPassword] = useState('');
   const [otherData, setOtherData] = useState('');
   const BUTTONS = THEME_DATA.BUTTONS;
-  const realm = RealmManager.getInstance();
 
   function createCredential() {
     console.log('date: ', new Date());
+    const realm = RealmManager.getInstance();
     try {
       if (realm) {
         realm.write(() => {

@@ -20,6 +20,10 @@ import CreateSelector from './screens/Overlays/CreateSelector';
 
 import {NavigationProvider} from 'react-native-navigation-hooks';
 
+import Realm from 'realm';
+
+Realm.deleteFile({});
+
 Navigation.registerComponent(
   'com.mk0er.Init',
   () => (props) => {
