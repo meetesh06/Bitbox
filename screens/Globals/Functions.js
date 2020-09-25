@@ -16,6 +16,7 @@ import {GoogleSignin} from '@react-native-community/google-signin';
 import RNFS from 'react-native-fs';
 import {DATABASE_NAME} from './AsyncStorageEnum.js';
 import {statusCodes} from '@react-native-community/google-signin';
+import GDrive from 'react-native-google-drive-api-wrapper';
 
 var Aes = NativeModules.Aes;
 
@@ -175,7 +176,18 @@ export async function callGoogleSignIn() {
   }
 }
 
-export function performMultipartUpload(params, progress, call) {
+function deleteFile(id, auth, call) {
+  fetch('https://www.googleapis.com/drive/v3/files/' + id, {
+    method: 'DELETE',
+    headers: {
+      Authorization: auth,
+    },
+  })
+    .then((val) => call(false, val))
+    .catch((err) => call(true, err));
+}
+
+export function performMultipartUpload(id, params, progress, call) {
   let http = new XMLHttpRequest();
   let url =
     'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
@@ -183,7 +195,18 @@ export function performMultipartUpload(params, progress, call) {
   http.onreadystatechange = function () {
     if (http.readyState === XMLHttpRequest.DONE) {
       let responseJson = JSON.parse(http.responseText);
-      call(responseJson);
+      if (id !== null) {
+        deleteFile(id, params.headers.Authorization, (err, resp) => {
+          if (err) {
+            console.error('ERROR DELETING FILE ', resp);
+          } else {
+            console.log('SUCCESS DELETING FILE ', resp);
+          }
+          call(responseJson);
+        });
+      } else {
+        call(responseJson);
+      }
     }
   };
   http.open('POST', url, true);

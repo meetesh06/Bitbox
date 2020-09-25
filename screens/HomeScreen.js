@@ -1,11 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   StyleSheet,
   ScrollView,
   // Dimensions,
   View,
   Text,
+  Image,
   TouchableOpacity,
 } from 'react-native';
 import {
@@ -13,6 +14,7 @@ import {
   callGoogleSignIn,
   performMultipartUpload,
   createRequest,
+  performMultipartUpdate,
 } from './Globals/Functions';
 import {B_CONTAINER, PRIMARY, WHITE, ACCENT} from './Globals/Colors';
 // import FAB from 'react-native-fab';
@@ -30,8 +32,13 @@ import RealmManager from '../database/realm';
 import {GoogleSignin, statusCodes} from '@react-native-community/google-signin';
 
 import LinearGradient from 'react-native-linear-gradient';
-
+import LottieView from 'lottie-react-native';
+import moment from 'moment';
 import GDrive from 'react-native-google-drive-api-wrapper';
+import RNFS from 'react-native-fs';
+
+// LOADING REQ 1 -> TOKEN ACQUISITION
+// LOADING REQ 2 -> GET CLOUD HISTORY
 
 // const DISPLAY_WIDTH = Dimensions.get('window').width;
 const gradientStyles = {
@@ -41,8 +48,13 @@ const gradientStyles = {
 const CloudStatus: () => React$Node = ({
   usesCloud,
   callUpdate,
-  loadingContent,
+  lastBackup,
+  loading,
+  cloudHistory,
+  uploadProgress,
 }) => {
+  const commonData = CommonDataManager.getInstance();
+  const animation = useRef(null);
   return (
     <LinearGradient
       colors={gradientStyles.cloud}
@@ -61,6 +73,26 @@ const CloudStatus: () => React$Node = ({
         shadowRadius: 3.84,
         elevation: 5,
       }}>
+      {loading === false &&
+        usesCloud === true &&
+        commonData.getGoogleSignedInSession() && (
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Image
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 40,
+              }}
+              source={{
+                uri: commonData.getRemoteUserData().user.photo,
+              }}
+            />
+          </View>
+        )}
       <View
         style={{
           justifyContent: 'center',
@@ -73,34 +105,87 @@ const CloudStatus: () => React$Node = ({
             textAlign: 'center',
             color: '#fff',
           }}>
-          Sync With Cloud
+          {loading === false && usesCloud === true && 'Ready to Sync'}
         </Text>
+        {loading === false && usesCloud === false && (
+          <TouchableOpacity>
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: 'Poppins-Bold',
+                textAlign: 'center',
+                color: '#fff',
+                position: 'relative',
+                top: -10,
+              }}>
+              Sign in to google drive
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                fontFamily: 'Poppins-Regular',
+                textAlign: 'center',
+                color: '#fff',
+                position: 'relative',
+                top: -10,
+              }}>
+              Your data will be backed up to your google drive folder
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <Text
           style={{
-            fontSize: 12,
+            fontSize: 9,
             fontFamily: 'Poppins-Regular',
             textAlign: 'center',
             color: '#fff',
           }}>
-          Uses Cloud: {usesCloud.toString()}
+          {loading === false &&
+            usesCloud === true &&
+            cloudHistory.length > 0 &&
+            'Last Updated: ' +
+              moment(cloudHistory[0].modifiedTime).format('YYYY-MM-DD HH:mm')}
+          {loading === false &&
+            usesCloud === true &&
+            cloudHistory.length === 0 &&
+            'Not Backed Up'}
         </Text>
       </View>
-      <TouchableOpacity
-        onPress={callUpdate}
-        style={{
-          width: 70,
-          height: 70,
-          borderColor: '#fff',
-          borderWidth: 2,
-          borderRadius: 35,
-          marginRight: 10,
-          marginLeft: 10,
-          alignSelf: 'center',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <FontAwesomeIcon name="cloud" size={35} color="#fff" />
-      </TouchableOpacity>
+      {loading === false && usesCloud === true && (
+        <TouchableOpacity
+          onPress={() => {
+            console.log('call update');
+            callUpdate(animation);
+          }}
+          style={{
+            alignSelf: 'center',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <LottieView
+            source={require('../animations/lf30_editor_09islqra.json')}
+            style={{
+              width: 80,
+              height: 80,
+            }}
+            autoSize
+            loop
+            ref={animation}
+          />
+          <Text
+            style={{
+              position: 'absolute',
+              top: 60,
+              fontSize: 10,
+              fontFamily: 'Poppins-Regular',
+              color: WHITE,
+            }}>
+            {uploadProgress}
+          </Text>
+          {/* <FontAwesomeIcon name="cloud" size={35} color="#fff" /> */}
+        </TouchableOpacity>
+      )}
     </LinearGradient>
   );
 };
@@ -134,6 +219,10 @@ const App: () => React$Node = () => {
   ];
   const [userUsesCloud, setUserUsesCloud] = useState(false);
   const commonData = CommonDataManager.getInstance();
+
+  const [loadingReq2, setLoadingReq2] = useState(true);
+  const [uploadProgressPercent, setUploadProgressPercent] = useState('');
+  const [cloudHistory, setCloudHistory] = useState([]);
 
   useNavigationCommandComplete(({commandName}) => {
     if (commandName === 'dismissModal') {
@@ -188,36 +277,76 @@ const App: () => React$Node = () => {
     });
   }
 
-  async function cloudUpdate() {
+  async function cloudUpdate(animation) {
+    function uploadProgress(progress) {
+      console.log('UPLOAD PROGRESS', progress);
+      let progressPercent = (progress.loaded / progress.total) * 100;
+      setUploadProgressPercent(progressPercent + '%');
+    }
+
+    function uploadComplete(response) {
+      console.log('UPLOAD COMPLETE', response);
+      RealmManager.reIssueInstance();
+      animation.current.reset();
+      setUploadProgressPercent('COMPLETED');
+      fetch(
+        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name = 'BITBOX.realm'&fields=files/id, files/modifiedTime&orderBy=modifiedTime desc",
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${commonData.getRemoteTokens().accessToken}`,
+          },
+        },
+      )
+        .then((res) => res.json())
+        .then((val) => {
+          // console.log(val);
+          val.files = val.files.map((v) => {
+            console.log(v);
+            v.modifiedTime = new Date(v.modifiedTime);
+            return v;
+          });
+          setCloudHistory(val.files);
+          setLoadingReq2(false);
+        })
+        .catch((err) => {
+          setLoadingReq2(false);
+          setCloudHistory([]);
+          console.error(err);
+        });
+    }
+
     const realm = RealmManager.getInstance();
-    if (!commonData.getGoogleSignedInSession()) {
-      const {error, mssg} = await callGoogleSignIn();
-      if (error) {
-        return console.error(mssg);
+    const isSignedIn = await GoogleSignin.isSignedIn();
+    if (!isSignedIn) {
+      if (commonData.getGoogleSignedInSession()) {
+        let userInfo = await GoogleSignin.signInSilently();
+        const tokens = await GoogleSignin.getTokens();
+        commonData.setRemoteTokens(tokens);
+        commonData.setRemoteUserData(userInfo);
+      } else {
+        const {error, mssg} = await callGoogleSignIn();
+        if (error) {
+          return console.error(mssg);
+        }
       }
     }
+    animation.current.play();
     realm.close();
     let params = await createRequest(commonData.getRemoteTokens().accessToken);
-    performMultipartUpload(params, uploadProgress, uploadComplete);
+    if (cloudHistory.length === 0) {
+      // NO EXISTING BACKUP
+      performMultipartUpload(null, params, uploadProgress, uploadComplete);
+    } else {
+      // UPDATE EXISTING FILE
+      performMultipartUpload(
+        cloudHistory[0].id,
+        params,
+        uploadProgress,
+        uploadComplete,
+      );
+    }
   }
-
-  function uploadProgress(progress) {
-    console.log('UPLOAD PROGRESS', progress);
-  }
-
-  function uploadComplete(response) {
-    console.log('UPLOAD COMPLETE', response);
-    RealmManager.reIssueInstance();
-  }
-
-  // function getDatabaseFileListing() {
-  //   fetch(
-  //     'https://www.googleapis.com/drive/v3/files',
-  //     {
-  //       headers: ''
-  //     }
-  //   )
-  // }
 
   useEffect(() => {
     setTopBarTitle('Hello, ' + commonData.getUsername().split(' ')[0]);
@@ -238,53 +367,66 @@ const App: () => React$Node = () => {
 
   // TRY SILENT SIGN IN
   useEffect(() => {
-    if (!commonData.getRemote()) {
-      setLoadingReq1(false);
-      return setUserUsesCloud(false);
+    function getDatabaseFileListing() {
+      fetch(
+        "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name = 'BITBOX.realm'&fields=files/id, files/modifiedTime&orderBy=modifiedTime desc",
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${commonData.getRemoteTokens().accessToken}`,
+          },
+        },
+      )
+        .then((res) => res.json())
+        .then((val) => {
+          val.files = val.files.map((v) => {
+            v.modifiedTime = new Date(v.modifiedTime);
+            return v;
+          });
+          setCloudHistory(val.files);
+          setLoadingReq2(false);
+        })
+        .catch((err) => {
+          setLoadingReq2(false);
+          setCloudHistory([]);
+          console.error(err);
+        });
     }
-    setUserUsesCloud(true);
-    const signInCheck = async () => {
+    // function deleteOlder() {
+    //   fetch(
+    //     'https://www.googleapis.com/drive/v3/files/1lry0jTHKpRyVjvKgaVHKEg520WVH-w6YcVSfFupu7Is5LVOR',
+    //     {
+    //       method: 'DELETE',
+    //       headers: {
+    //         Authorization: `Bearer ${commonData.getRemoteTokens().accessToken}`,
+    //       },
+    //     },
+    //   )
+    //     .then((val) => console.log('DELETED: ', val))
+    //     .catch((err) => console.log(err));
+    // }
+    async function signInCheck() {
       try {
-        const userInfo = await GoogleSignin.signInSilently();
+        const isSignedIn = await GoogleSignin.isSignedIn();
+        let userInfo = null;
+        if (!isSignedIn) {
+          userInfo = await GoogleSignin.signInSilently();
+        } else {
+          userInfo = await GoogleSignin.getCurrentUser();
+        }
+        if (userInfo === null) {
+          commonData.setGoogleSignedInSession(false);
+          console.error('ERROR GETTING USER DATA');
+          return;
+        }
         const tokens = await GoogleSignin.getTokens();
-        console.log('SILENT LOGIN SUCCESSFUL: ', tokens.accessToken);
+        // GET THE TOKENS FROM SILENT LOGIN
         commonData.setRemoteTokens(tokens);
         commonData.setRemoteUserData(userInfo);
         commonData.setGoogleSignedInSession(true);
-        // GDrive.setAccessToken(tokens.accessToken);
-        // GDrive.init();
-        // GDrive.files
-        //   .list({q: "name = 'BITBOX.realm'"})
-        //   .then((res) => res.json())
-        //   .then((jsonData) => {
-        //     console.log(jsonData);
-        //   })
-        //   .catch((err) => {
-        //     console.log(err);
-        //   });
-        // GDrive.files
-        //   // .get('1KwFxoi7IGXrPtEg0yqK_VHnw2tsQ89pncgfWmuzhawiFNs9e', {})
-        //   .get('1CNkSXLWV4RB7jlFSbuCfh3jaR_nwBGRbXlLwSDfRN_opaU8E', {})
-        //   .then((res) => res.json())
-        //   .then((jsonData) => {
-        //     console.log(jsonData);
-        //   })
-        //   .catch((err) => {
-        //     console.log(err);
-        //   });
-        fetch(
-          // "https://www.googleapis.com/drive/v3/files?q=name = 'BITBOX.realm'",
-          "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name = 'BITBOX.realm'&fields=files/id, files/modifiedTime&orderBy=modifiedTime desc",
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          },
-        )
-          .then((res) => res.json())
-          .then((val) => console.log(val))
-          .catch((err) => console.log(err));
+        // console.log(userInfo.user.photo);
+        getDatabaseFileListing();
+        // deleteOlder();
       } catch (error) {
         if (error.code === statusCodes.SIGN_IN_REQUIRED) {
           commonData.setGoogleSignedInSession(false);
@@ -294,8 +436,19 @@ const App: () => React$Node = () => {
       } finally {
         setLoadingReq1(false);
       }
-    };
+    }
+    if (!commonData.getRemote()) {
+      setLoadingReq1(false);
+      setLoadingReq2(false);
+      setUserUsesCloud(false);
+      return;
+    }
+    setUserUsesCloud(true);
     signInCheck();
+    return () => {
+      getDatabaseFileListing();
+      signInCheck();
+    };
   }, [commonData]);
 
   useEffect(() => {
@@ -305,7 +458,7 @@ const App: () => React$Node = () => {
     //     Authorization: `Bearer ${commonData.getRemoteTokens().accessToken}`,
     //   },
     //   fromUrl:
-    //     'https://www.googleapis.com/drive/v3/files/1bbBeuR-KdyvGTsvpNZA4TP5o1Q3kZiF9?alt=media',
+    //     'https://www.googleapis.com/drive/v3/files/1IpaOEfaittlUpJCXalXfpvp01Nb-_P19-zSWIM93r9kV2d6Z?alt=media',
     //   toFile: RNFS.DocumentDirectoryPath + '/DOWNLOADED.realm',
     //   begin: (res) => {
     //     console.log(res);
@@ -332,7 +485,10 @@ const App: () => React$Node = () => {
         <CloudStatus
           usesCloud={userUsesCloud}
           callUpdate={cloudUpdate}
-          loading={loadingContent || loadingReq1}
+          lastBackup={cloudHistory}
+          loading={loadingContent || loadingReq1 || loadingReq2}
+          cloudHistory={cloudHistory}
+          uploadProgress={uploadProgressPercent}
         />
         <HorizontalListView
           handler={() => {
