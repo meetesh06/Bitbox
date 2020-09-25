@@ -59,6 +59,7 @@ const App: () => React$Node = ({
           elements.map((element) => {
             return (
               <TouchableOpacity
+                style={styles.elementTouchable}
                 key={element.id}
                 onPress={() => handler(element)}>
                 <CredentialCard
@@ -108,11 +109,11 @@ const App: () => React$Node = ({
 const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
-    padding: 10,
   },
   sectionHeaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingLeft: 10,
   },
   sectionHeaderText: {
     fontSize: 18,
@@ -121,6 +122,9 @@ const styles = StyleSheet.create({
   sectionHeaderIcon: {
     paddingLeft: 10,
     top: -2,
+  },
+  elementTouchable: {
+    paddingBottom: 10,
   },
 });
 

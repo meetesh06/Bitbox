@@ -19,7 +19,7 @@ import {goToHome} from './Navigators/HomeNav';
 import CommonDataManager from './Globals/CommonDataManager';
 
 const App: () => React$Node = () => {
-  const {push} = useNavigation();
+  const {push, setStackRoot} = useNavigation();
 
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',
@@ -79,15 +79,16 @@ const App: () => React$Node = () => {
   }
 
   useEffect(() => {
-    if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
-      let timer1 = setTimeout(() => goToHome(push), 1000);
-      return () => {
-        clearTimeout(timer1);
-      };
-    } else {
-      setSignedIn(false);
-    }
-  }, [commonData, push]);
+    // if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
+    //   let timer1 = setTimeout(() => goToHome(setStackRoot), 1000);
+    //   return () => {
+    //     clearTimeout(timer1);
+    //   };
+    // } else {
+    //   setSignedIn(false);
+    // }
+    setSignedIn(false);
+  }, [commonData, setStackRoot]);
 
   return (
     <>

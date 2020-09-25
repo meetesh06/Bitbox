@@ -1,7 +1,7 @@
 import {PRIMARY, PRIMARY_LIGHT, GRAY, WHITE, TITLE_BLACK} from './Colors';
 
 const THEME_DATA = {
-  C_THEME_MODE: 'light',
+  C_THEME_MODE: 'dark',
   UPDATED: false,
   BUTTONS: {
     BUTTON1: {

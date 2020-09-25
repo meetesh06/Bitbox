@@ -6,10 +6,8 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import {Hideo} from 'react-native-textinput-effects';
-import OTPTextInput from 'react-native-otp-textinput';
 import {useNavigation} from 'react-native-navigation-hooks';
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 
@@ -17,9 +15,10 @@ import {PRIMARY, WHITE, B_CONTAINER, B_HIGHLIGHT} from './Globals/Colors';
 
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme, darkThemeColor} from './Globals/Functions';
-import {USER_NAME, USER_EMAIL, USER_AGE} from './Globals/AsyncStorageEnum';
+import {USER_NAME, USER_EMAIL, USER_PHONE} from './Globals/AsyncStorageEnum';
 
 import TopBar from './Components/TopBar';
+import Input from './Components/Input';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
@@ -27,9 +26,11 @@ const App: () => React$Node = () => {
   const [nameError, setNameError] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(false);
-  const [age, setAge] = useState('');
-  const [ageError, setAgeError] = useState(false);
-  const [otp, setOtp] = useState('');
+  // const [age, setAge] = useState('');
+  const [phone, setPhone] = useState('');
+  // const [phoneError, setphoneError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const BUTTONS = THEME_DATA.BUTTONS;
 
   function validateExpression(expression, val, state, trigger) {
@@ -82,7 +83,7 @@ const App: () => React$Node = () => {
       RNSecureKeyStore.set(USER_EMAIL, email, {
         accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
       }),
-      RNSecureKeyStore.set(USER_AGE, age, {
+      RNSecureKeyStore.set(USER_PHONE, phone, {
         accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
       }),
     ])
@@ -95,6 +96,7 @@ const App: () => React$Node = () => {
   }
 
   function handleSignup() {
+    setLoading(true);
     // MAKE SERVER CALL AND VERIFY OTP, IF ALL CHECKS OUT DO THIS
     storeDataAsync(() => {
       handleNext();
@@ -108,76 +110,64 @@ const App: () => React$Node = () => {
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
         <TopBar title="Sign Up" />
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.inputContainerFirst}>
-            <Hideo
-              iconClass={FontAwesomeIcon}
-              iconName={'user'}
-              placeholder="Name"
-              iconColor={'white'}
-              iconBackgroundColor={PRIMARY}
-              inputStyle={{
-                ...styles.inputStyle,
-                borderBottomWidth: nameError ? 2 : 0,
-              }}
-              value={name}
-              onChangeText={(text) =>
-                validateExpression(/^[A-Za-z\s]+$/, text, setName, setNameError)
-              }
-              keyboardType={'default'}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Hideo
-              iconClass={FontAwesomeIcon}
-              iconName={'envelope'}
-              placeholder="Email"
-              iconColor={'white'}
-              iconBackgroundColor={PRIMARY}
-              inputStyle={{
-                ...styles.inputStyle,
-                borderBottomWidth: emailError ? 2 : 0,
-              }}
-              value={email}
-              onChangeText={(text) =>
-                validateExpression(
-                  /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g,
-                  text,
-                  setEmail,
-                  setEmailError,
-                )
-              }
-              keyboardType={'email-address'}
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Hideo
-              iconClass={FontAwesomeIcon}
-              iconName={'heart'}
-              placeholder="Age"
-              iconColor={'white'}
-              iconBackgroundColor={'pink'}
-              inputStyle={{
-                ...styles.inputStyle,
-                borderBottomWidth: ageError ? 2 : 0,
-              }}
-              value={age}
-              onChangeText={(text) =>
-                validateExpression(/[0-9]/g, text, setAge, setAgeError)
-              }
-              keyboardType={'phone-pad'}
-            />
-          </View>
+        <ScrollView
+          style={styles.scrollView}
+          keyboardShouldPersistTaps={'handled'}>
+          <Input
+            title="Name"
+            icon="user"
+            value={name}
+            error={nameError}
+            updater={(text) => {
+              validateExpression(
+                /^[A-Za-z\s]+$/,
+                text.trim(),
+                setName,
+                setNameError,
+              );
+            }}
+            style={{
+              marginTop: 25,
+            }}
+          />
+          <Input
+            title="Email"
+            icon="envelope"
+            value={email}
+            keyboardType={'email-address'}
+            error={emailError}
+            updater={(text) => {
+              validateExpression(
+                /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g,
+                text.trim(),
+                setEmail,
+                setEmailError,
+              );
+            }}
+          />
+
+          <Input
+            title="Phone"
+            icon="phone"
+            value={phone}
+            keyboardType={'mobile'}
+            error={phoneError}
+            updater={(text) => {
+              validateExpression(
+                /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/g,
+                text.trim(),
+                setPhone,
+                setPhoneError,
+              );
+            }}
+          />
+
           <View style={styles.inputContainer}>
             <Text
               style={{...styles.otpText, color: darkThemeColor(B_HIGHLIGHT)}}>
-              An OTP will be sent to your email address, please enter the code
-              to continue
+              You don't have to worry, we wont not be sending you any spam or
+              promotional content.{'\n'}
             </Text>
-            <OTPTextInput
-              tintColor="#1e88ae"
-              handleTextChange={(text) => setOtp(text)}
-            />
           </View>
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
@@ -185,39 +175,50 @@ const App: () => React$Node = () => {
                 style={{
                   ...ignoreTheme(BUTTONS.BUTTON3, 'btn'),
                   borderColor:
+                    loading ||
                     nameError ||
                     emailError ||
-                    ageError ||
+                    phoneError ||
                     name === '' ||
                     email === '' ||
-                    age === ''
+                    phone === ''
                       ? '#bebebe'
                       : '#1e88ae',
                 }}
                 disabled={
+                  loading ||
                   nameError ||
                   emailError ||
-                  ageError ||
+                  phoneError ||
                   name === '' ||
                   email === '' ||
-                  age === ''
+                  phone === ''
                 }
                 onPress={handleSignup}>
-                <Text
-                  style={{
-                    ...ignoreTheme(BUTTONS.BUTTON3, 'text'),
-                    color:
-                      nameError ||
-                      emailError ||
-                      ageError ||
-                      name === '' ||
-                      email === '' ||
-                      age === ''
-                        ? '#bebebe'
-                        : '#1e88ae',
-                  }}>
-                  Send OTP
-                </Text>
+                {!loading && (
+                  <Text
+                    style={{
+                      ...ignoreTheme(BUTTONS.BUTTON3, 'text'),
+                      color:
+                        nameError ||
+                        emailError ||
+                        phoneError ||
+                        name === '' ||
+                        email === '' ||
+                        phone === ''
+                          ? '#bebebe'
+                          : '#1e88ae',
+                    }}>
+                    Continue
+                  </Text>
+                )}
+                {loading && (
+                  <ActivityIndicator
+                    style={styles.loading}
+                    size="large"
+                    color={PRIMARY}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -237,12 +238,12 @@ const styles = StyleSheet.create({
     paddingRight: 15,
   },
   inputContainer: {
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 5,
+    marginBottom: 5,
   },
   inputContainerFirst: {
     marginTop: 50,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   inputStyle: {
     color: '#464949',

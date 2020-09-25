@@ -1,11 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
   // Dimensions,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
@@ -15,7 +16,7 @@ import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme, darkThemeColor} from './Globals/Functions';
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 
-import {B_CONTAINER, B_HIGHLIGHT} from './Globals/Colors';
+import {B_CONTAINER, B_HIGHLIGHT, PRIMARY} from './Globals/Colors';
 
 import CheckBox from '@react-native-community/checkbox';
 
@@ -25,13 +26,13 @@ import TopBar from './Components/TopBar';
 import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
 import Realm from 'realm';
 
-const App: () => React$Node = () => {
+const App: () => React$Node = ({salt = ''}) => {
   const {setStackRoot} = useNavigation();
   const [password, setPassword] = useState('');
-  const [salt, setSalt] = useState('');
   const [remote, setRemote] = useState('');
   const [remoteLocking, setRemoteLocking] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const BUTTONS = THEME_DATA.BUTTONS;
 
@@ -77,13 +78,8 @@ const App: () => React$Node = () => {
     });
   }
 
-  useEffect(() => {
-    // CALL TO REMOTE SERVER
-    setRemote('REMOTE_SALT');
-  }, []);
-
   function handleNext() {
-    console.log(remoteLocking ? remote : salt);
+    setLoading(true);
     Promise.all([
       RNSecureKeyStore.set(MASTER_KEY, password, {
         accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
@@ -97,7 +93,7 @@ const App: () => React$Node = () => {
           updateDatabaseManager(() => {
             try {
               Realm.deleteFile({});
-              console.error('REMOVED OLD REALM DB');
+              console.log('REMOVED OLD REALM DB');
             } catch (e) {
               console.log(e);
             }
@@ -117,7 +113,9 @@ const App: () => React$Node = () => {
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
         <TopBar title="Sign Up" />
-        <ScrollView style={styles.scrollView}>
+        <ScrollView
+          style={styles.scrollView}
+          keyboardShouldPersistTaps={'handled'}>
           <View style={styles.inputContainerFirst}>
             <Hideo
               iconClass={FontAwesomeIcon}
@@ -139,7 +137,10 @@ const App: () => React$Node = () => {
                 )
               }
               keyboardType={'default'}
-              secureTextEntry={true}
+              style={{
+                borderRadius: 10,
+                overflow: 'hidden',
+              }}
             />
           </View>
           <View style={styles.inputContainer}>
@@ -176,6 +177,7 @@ const App: () => React$Node = () => {
                 true: darkThemeColor(B_HIGHLIGHT),
                 false: darkThemeColor(B_HIGHLIGHT),
               }}
+              disabled={true}
               value={remoteLocking}
               onValueChange={(val) => setRemoteLocking(val)}
             />
@@ -184,7 +186,7 @@ const App: () => React$Node = () => {
                 ...styles.checkboxText,
                 color: darkThemeColor(B_HIGHLIGHT),
               }}>
-              Enable Remote Locking.
+              Enable Remote Locking. (Under Dev Testing)
             </Text>
           </View>
           <View>
@@ -206,14 +208,23 @@ const App: () => React$Node = () => {
                 }}
                 disabled={passwordError || password === ''}
                 onPress={handleNext}>
-                <Text
-                  style={{
-                    ...ignoreTheme(BUTTONS.BUTTON4, 'text'),
-                    color:
-                      passwordError || password === '' ? '#bebebe' : '#fff',
-                  }}>
-                  Continue
-                </Text>
+                {!loading && (
+                  <Text
+                    style={{
+                      ...ignoreTheme(BUTTONS.BUTTON4, 'text'),
+                      color:
+                        passwordError || password === '' ? '#bebebe' : '#fff',
+                    }}>
+                    Continue
+                  </Text>
+                )}
+                {loading && (
+                  <ActivityIndicator
+                    style={styles.loading}
+                    size="large"
+                    color={PRIMARY}
+                  />
+                )}
               </TouchableOpacity>
             </View>
           </View>

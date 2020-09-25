@@ -4,19 +4,18 @@ import {
   THEME_MODE,
   USER_NAME,
   USER_EMAIL,
-  USER_AGE,
+  USER_PHONE,
   REMOTE_BACKUP,
 } from './AsyncStorageEnum';
 import AsyncStorage from '@react-native-community/async-storage';
 import {NativeModules} from 'react-native';
-import RNSecureKeyStore from 'react-native-secure-key-store';
+import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 import {MASTER_KEY, SALT} from './Database';
 import CommonDataManager from './CommonDataManager';
 import {GoogleSignin} from '@react-native-community/google-signin';
 import RNFS from 'react-native-fs';
 import {DATABASE_NAME} from './AsyncStorageEnum.js';
 import {statusCodes} from '@react-native-community/google-signin';
-import GDrive from 'react-native-google-drive-api-wrapper';
 
 var Aes = NativeModules.Aes;
 
@@ -39,7 +38,7 @@ export const updateCommonData = (call) => {
   RNSecureKeyStore.get(USER_NAME).then(
     (name) => {
       RNSecureKeyStore.get(USER_EMAIL).then((email) => {
-        RNSecureKeyStore.get(USER_AGE).then((age) => {
+        RNSecureKeyStore.get(USER_PHONE).then((age) => {
           commonData.setSignedIn(true);
           commonData.setUsername(name);
           commonData.setEmail(email);
@@ -139,40 +138,38 @@ export const convertStringToByteArray = (str) => {
 
 export async function callGoogleSignIn() {
   const commonData = CommonDataManager.getInstance();
+  GoogleSignin.configure({
+    scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
+    webClientId:
+      '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+    // offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+    // hostedDomain: '', // specifies a hosted domain restriction
+    // loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
+    // forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
+    // accountName: '', // [Android] specifies an account name on the device that should be used
+    // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+  });
   try {
     await GoogleSignin.hasPlayServices();
     const userInfo = await GoogleSignin.signIn();
-    const tokens = await GoogleSignin.getTokens();
-    console.log(tokens);
-    commonData.setRemoteTokens(tokens);
+    await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    commonData.setRemote(true);
     commonData.setRemoteUserData(userInfo);
-    commonData.setGoogleSignedInSession(true);
-    return {
-      error: false,
-      mssg: 'successfully logged in',
-    };
+    return {error: false, mssg: 'SIGN IN SUCCESSFUL'};
   } catch (error) {
+    console.log(error);
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      return {
-        error: true,
-        mssg: 'sign in cancelled',
-      };
+      // user cancelled the login flow
     } else if (error.code === statusCodes.IN_PROGRESS) {
-      return {
-        error: true,
-        mssg: 'login in progress',
-      };
+      // operation (e.g. sign in) is in progress already
     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-      return {
-        error: true,
-        mssg: 'google play services required',
-      };
+      // play services not available or outdated
     } else {
-      return {
-        error: true,
-        mssg: error.toString(),
-      };
+      // some other error happened
     }
+    return {error: true, mssg: 'SIGN IN FAILURE'};
   }
 }
 
@@ -258,4 +255,30 @@ export async function createRequest(token) {
   );
 
   return result;
+}
+
+export function downloadDatabaseFile(id, token, begin, progress) {
+  return RNFS.downloadFile({
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    fromUrl: `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
+    toFile: RNFS.DocumentDirectoryPath + '/BITBOX.realm',
+    begin,
+    progress,
+    background: true,
+    progressDivider: 1,
+  }).promise;
+}
+
+export function getDatabaseFileList(token) {
+  return fetch(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name = '${DATABASE_NAME}'&fields=files/id, files/modifiedTime&orderBy=modifiedTime desc`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
 }
