@@ -4,8 +4,10 @@ import {darkThemeColor} from '../Globals/Functions';
 import {B_TOPBAR_TITLE, PRIMARY} from '../Globals/Colors';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
+import {useNavigation} from 'react-native-navigation-hooks';
 
-const App: () => React$Node = ({title, context}) => {
+const App: () => React$Node = ({title, context, backCallback}) => {
+  const {pop} = useNavigation();
   return (
     <>
       <View style={styles.container}>
@@ -13,6 +15,16 @@ const App: () => React$Node = ({title, context}) => {
           <TouchableOpacity
             style={styles.btnContaner}
             onPress={() => Navigation.dismissModal(context)}>
+            <FontAwesomeIcon
+              style={styles.btn}
+              name="chevron-left"
+              size={20}
+              color={darkThemeColor(B_TOPBAR_TITLE)}
+            />
+          </TouchableOpacity>
+        )}
+        {backCallback !== undefined && (
+          <TouchableOpacity style={styles.btnContaner} onPress={backCallback}>
             <FontAwesomeIcon
               style={styles.btn}
               name="chevron-left"

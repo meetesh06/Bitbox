@@ -6,6 +6,7 @@ import {
   USER_EMAIL,
   USER_PHONE,
   REMOTE_BACKUP,
+  TOKEN,
 } from './AsyncStorageEnum';
 import AsyncStorage from '@react-native-community/async-storage';
 import {NativeModules} from 'react-native';
@@ -109,11 +110,14 @@ export const updateDatabaseManager = (call) => {
     (res) => {
       RNSecureKeyStore.get(SALT).then(
         (salt) => {
-          generateKey(res, salt, 5000, 256).then((key) => {
-            commonData.setMasterKey(key);
-            commonData.setMasterKeyStatus(true);
-            commonData.setSaltStatus(salt === '' ? false : true);
-            call(true);
+          RNSecureKeyStore.get(TOKEN).then((token) => {
+            generateKey(res, salt, 5000, 256).then((key) => {
+              commonData.setApiToken(token);
+              commonData.setMasterKey(key);
+              commonData.setMasterKeyStatus(true);
+              commonData.setSaltStatus(salt === '' ? false : true);
+              call(true);
+            });
           });
         },
         (errSalt) => {},

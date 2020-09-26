@@ -12,6 +12,7 @@ export default class CommonDataManager {
   _remoteUserData = null;
   _signedInSession = false;
   _remoteTokens = null;
+  _apiToken = '';
 
   /**
    * @returns {CommonDataManager} singleton
@@ -108,5 +109,13 @@ export default class CommonDataManager {
 
   setRemoteTokens(status) {
     this._remoteTokens = status;
+  }
+
+  getApiToken() {
+    return this._apiToken;
+  }
+
+  setApiToken(token) {
+    this._apiToken = token;
   }
 }

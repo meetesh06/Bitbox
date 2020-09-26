@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -26,8 +26,18 @@ import TopBar from './Components/TopBar';
 import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
 import Realm from 'realm';
 
-const App: () => React$Node = ({salt = ''}) => {
-  const {setStackRoot} = useNavigation();
+import DeviceInfo from 'react-native-device-info';
+
+import {
+  USER_NAME,
+  USER_EMAIL,
+  USER_PHONE,
+  API_URL,
+  TOKEN,
+} from './Globals/AsyncStorageEnum';
+
+const App: () => React$Node = ({salt = '', name, email, phone}) => {
+  const {setStackRoot, pop} = useNavigation();
   const [password, setPassword] = useState('');
   const [remote, setRemote] = useState('');
   const [remoteLocking, setRemoteLocking] = useState(false);
@@ -78,9 +88,20 @@ const App: () => React$Node = ({salt = ''}) => {
     });
   }
 
-  function handleNext() {
-    setLoading(true);
+  function storeDataAsync(token, call) {
     Promise.all([
+      RNSecureKeyStore.set(USER_NAME, name, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(USER_EMAIL, email, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(USER_PHONE, phone, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
+      RNSecureKeyStore.set(TOKEN, token, {
+        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+      }),
       RNSecureKeyStore.set(MASTER_KEY, password, {
         accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
       }),
@@ -89,22 +110,69 @@ const App: () => React$Node = ({salt = ''}) => {
       }),
     ])
       .then((res) => {
-        updateCommonData(() => {
-          updateDatabaseManager(() => {
-            try {
-              Realm.deleteFile({});
-              console.log('REMOVED OLD REALM DB');
-            } catch (e) {
-              console.log(e);
-            }
-            nextScreen();
-          });
-        });
+        call();
       })
       .catch((err) => {
-        console.error(err, 'THERE WAS AN ERROR ');
+        console.log(err, 'THERE WAS AN ERROR ');
       });
   }
+
+  async function handleNext() {
+    setLoading(true);
+    let uniqueId = DeviceInfo.getUniqueId();
+    let systemVersion = DeviceInfo.getSystemVersion();
+    let systemName = DeviceInfo.getSystemName();
+    let hasNotch = DeviceInfo.hasNotch();
+    let type = DeviceInfo.getDeviceType();
+    let deviceId = DeviceInfo.getDeviceId();
+
+    fetch(API_URL + '/new-user-registration', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        username: name,
+        email,
+        phone,
+        deviceInfo: {
+          systemVersion,
+          systemName,
+          hasNotch,
+          type,
+          deviceId,
+        },
+        deviceUUID: uniqueId,
+        master: password,
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.error === false) {
+          storeDataAsync(token, () => {
+            updateCommonData(() => {
+              updateDatabaseManager(() => {
+                try {
+                  Realm.deleteFile({});
+                  console.log('REMOVED OLD REALM DB');
+                } catch (e) {
+                  console.log(e);
+                }
+                nextScreen();
+              });
+            });
+          });
+        } else {
+          console.error('SIGNUP ERROR: ', result.mssg);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.error('SIGNUP ERROR: ', err);
+      });
+  }
+
   return (
     <>
       <View
@@ -112,7 +180,7 @@ const App: () => React$Node = ({salt = ''}) => {
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
-        <TopBar title="Sign Up" />
+        <TopBar title="Sign Up" backCallback={() => pop()} />
         <ScrollView
           style={styles.scrollView}
           keyboardShouldPersistTaps={'handled'}>

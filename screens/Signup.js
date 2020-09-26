@@ -15,20 +15,17 @@ import {PRIMARY, WHITE, B_CONTAINER, B_HIGHLIGHT} from './Globals/Colors';
 
 import THEME_DATA from './Globals/ThemeData';
 import {ignoreTheme, darkThemeColor} from './Globals/Functions';
-import {USER_NAME, USER_EMAIL, USER_PHONE} from './Globals/AsyncStorageEnum';
 
 import TopBar from './Components/TopBar';
 import Input from './Components/Input';
 
 const App: () => React$Node = () => {
-  const {setStackRoot} = useNavigation();
+  const {push} = useNavigation();
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(false);
-  // const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
-  // const [phoneError, setphoneError] = useState(false);
   const [phoneError, setPhoneError] = useState(false);
   const [loading, setLoading] = useState(false);
   const BUTTONS = THEME_DATA.BUTTONS;
@@ -43,7 +40,7 @@ const App: () => React$Node = () => {
   }
 
   function handleNext() {
-    setStackRoot({
+    push({
       component: {
         name: 'com.mk1er.Master',
         options: {
@@ -71,37 +68,16 @@ const App: () => React$Node = () => {
             },
           },
         },
+        passProps: {
+          name,
+          email,
+          phone,
+          popItem: true,
+        },
       },
     });
   }
 
-  function storeDataAsync(call) {
-    Promise.all([
-      RNSecureKeyStore.set(USER_NAME, name, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_EMAIL, email, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_PHONE, phone, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-    ])
-      .then((res) => {
-        call();
-      })
-      .catch((err) => {
-        console.log(err, 'THERE WAS AN ERROR ');
-      });
-  }
-
-  function handleSignup() {
-    setLoading(true);
-    // MAKE SERVER CALL AND VERIFY OTP, IF ALL CHECKS OUT DO THIS
-    storeDataAsync(() => {
-      handleNext();
-    });
-  }
   return (
     <>
       <View
@@ -165,8 +141,7 @@ const App: () => React$Node = () => {
           <View style={styles.inputContainer}>
             <Text
               style={{...styles.otpText, color: darkThemeColor(B_HIGHLIGHT)}}>
-              You don't have to worry, we wont not be sending you any spam or
-              promotional content.{'\n'}
+              We will be sending an OTP to your registered email address.{'\n'}
             </Text>
           </View>
           <View style={styles.submitContainer}>
@@ -194,7 +169,7 @@ const App: () => React$Node = () => {
                   email === '' ||
                   phone === ''
                 }
-                onPress={handleSignup}>
+                onPress={handleNext}>
                 {!loading && (
                   <Text
                     style={{
