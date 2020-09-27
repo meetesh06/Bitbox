@@ -9,7 +9,10 @@ import Google from './screens/Google';
 import HomeScreen from './screens/HomeScreen';
 import BeamScreen from './screens/BeamScreen';
 import Theme from './screens/Theme';
+import OTP from './screens/OTP';
 import Settings from './screens/Settings';
+import Login from './screens/Login';
+import RestoreGoogleBackup from './screens/RestoreGoogleBackup';
 import CreateCredential from './screens/CreateScreens/CreateCredential';
 import {
   updateThemeMode,
@@ -154,6 +157,42 @@ Navigation.registerComponent(
     );
   },
   () => CreateCredential,
+);
+
+Navigation.registerComponent(
+  'com.mk1er.OTP',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <OTP {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => OTP,
+);
+
+Navigation.registerComponent(
+  'com.mk0er.Login',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <Login {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => Login,
+);
+
+Navigation.registerComponent(
+  'com.mk1er.RestoreGoogleBackup',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <RestoreGoogleBackup {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => RestoreGoogleBackup,
 );
 
 Navigation.events().registerBottomTabSelectedListener(

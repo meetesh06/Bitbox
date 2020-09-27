@@ -62,7 +62,38 @@ const App: () => React$Node = () => {
     });
   }
 
-  function loginScreen() {}
+  function loginScreen() {
+    push({
+      component: {
+        name: 'com.mk0er.Login',
+        options: {
+          topBar: {
+            visible: false,
+          },
+          animations: {
+            push: {
+              content: {
+                alpha: {
+                  from: 0,
+                  to: 1,
+                  duration: 300,
+                },
+              },
+            },
+            pop: {
+              content: {
+                alpha: {
+                  from: 1,
+                  to: 0,
+                  duration: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 
   return (
     <>

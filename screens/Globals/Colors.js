@@ -8,6 +8,11 @@ export const B_CONTAINER = {
   light: '#fff',
   dark: '#121212',
 };
+
+export const B_INNER = {
+  light: '#fafafa',
+  dark: '#fafafa',
+};
 export const B_BOTTOMNAV = {
   light: '#efefef',
   dark: '#141414',

@@ -79,14 +79,14 @@ const App: () => React$Node = () => {
   }
 
   useEffect(() => {
-    if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
-      let timer1 = setTimeout(() => goToHome(setStackRoot), 1000);
-      return () => {
-        clearTimeout(timer1);
-      };
-    } else {
-      setSignedIn(false);
-    }
+    // if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
+    //   let timer1 = setTimeout(() => goToHome(setStackRoot), 1000);
+    //   return () => {
+    //     clearTimeout(timer1);
+    //   };
+    // } else {
+    //   setSignedIn(false);
+    // }
     setSignedIn(false);
   }, [commonData, setStackRoot]);
 

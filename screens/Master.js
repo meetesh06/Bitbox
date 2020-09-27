@@ -13,36 +13,25 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
-import {ignoreTheme, darkThemeColor} from './Globals/Functions';
-import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+import {darkThemeColor, darkTheme} from './Globals/Functions';
 
 import {B_CONTAINER, B_HIGHLIGHT, PRIMARY} from './Globals/Colors';
 
 import CheckBox from '@react-native-community/checkbox';
 
-import {MASTER_KEY, SALT} from './Globals/Database';
 import TopBar from './Components/TopBar';
-
-import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
-import Realm from 'realm';
 
 import DeviceInfo from 'react-native-device-info';
 
-import {
-  USER_NAME,
-  USER_EMAIL,
-  USER_PHONE,
-  API_URL,
-  TOKEN,
-} from './Globals/AsyncStorageEnum';
+import {API_URL} from './Globals/AsyncStorageEnum';
 
 const App: () => React$Node = ({salt = '', name, email, phone}) => {
   const {setStackRoot, pop} = useNavigation();
   const [password, setPassword] = useState('');
-  const [remote, setRemote] = useState('');
-  const [remoteLocking, setRemoteLocking] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [creationError, setCreationError] = useState(false);
+  let otpToken = '';
 
   const BUTTONS = THEME_DATA.BUTTONS;
 
@@ -58,7 +47,7 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
   function nextScreen() {
     setStackRoot({
       component: {
-        name: 'com.mk1er.Google',
+        name: 'com.mk1er.OTP',
         options: {
           topBar: {
             visible: false,
@@ -84,37 +73,15 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
             },
           },
         },
+        passProps: {
+          otpToken,
+          name,
+          email,
+          phone,
+          password,
+        },
       },
     });
-  }
-
-  function storeDataAsync(token, call) {
-    Promise.all([
-      RNSecureKeyStore.set(USER_NAME, name, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_EMAIL, email, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_PHONE, phone, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(TOKEN, token, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(MASTER_KEY, password, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(SALT, remoteLocking ? remote : salt, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-    ])
-      .then((res) => {
-        call();
-      })
-      .catch((err) => {
-        console.log(err, 'THERE WAS AN ERROR ');
-      });
   }
 
   async function handleNext() {
@@ -125,50 +92,45 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
     let hasNotch = DeviceInfo.hasNotch();
     let type = DeviceInfo.getDeviceType();
     let deviceId = DeviceInfo.getDeviceId();
+    let params = {
+      username: name,
+      email,
+      phone,
+      deviceInfo: {
+        systemVersion,
+        systemName,
+        hasNotch,
+        type,
+        deviceId,
+      },
+      deviceUUID: uniqueId,
+      master: password,
+    };
 
+    console.log(JSON.stringify(params));
     fetch(API_URL + '/new-user-registration', {
       method: 'POST',
       headers: {
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: {
-        username: name,
-        email,
-        phone,
-        deviceInfo: {
-          systemVersion,
-          systemName,
-          hasNotch,
-          type,
-          deviceId,
-        },
-        deviceUUID: uniqueId,
-        master: password,
-      },
+      body: JSON.stringify(params),
     })
       .then((res) => res.json())
       .then((result) => {
+        console.log(result);
         if (result.error === false) {
-          storeDataAsync(token, () => {
-            updateCommonData(() => {
-              updateDatabaseManager(() => {
-                try {
-                  Realm.deleteFile({});
-                  console.log('REMOVED OLD REALM DB');
-                } catch (e) {
-                  console.log(e);
-                }
-                nextScreen();
-              });
-            });
-          });
+          otpToken = result.data.token;
+          nextScreen();
         } else {
           console.error('SIGNUP ERROR: ', result.mssg);
           setLoading(false);
+          setCreationError(result.mssg);
         }
       })
       .catch((err) => {
         setLoading(false);
+        setCreationError('UNKNOWN ERROR OCCURED 7001');
         console.error('SIGNUP ERROR: ', err);
       });
   }
@@ -246,8 +208,7 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
                 false: darkThemeColor(B_HIGHLIGHT),
               }}
               disabled={true}
-              value={remoteLocking}
-              onValueChange={(val) => setRemoteLocking(val)}
+              value={false}
             />
             <Text
               style={{
@@ -266,9 +227,20 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
           </View>
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
+              {!loading && creationError !== '' && (
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Bold',
+                    fontSize: 10,
+                    textAlign: 'center',
+                    color: 'red',
+                  }}>
+                  {creationError}
+                </Text>
+              )}
               <TouchableOpacity
                 style={{
-                  ...ignoreTheme(BUTTONS.BUTTON4, 'btn'),
+                  ...darkTheme(BUTTONS.BUTTON4, 'btn'),
                   borderColor:
                     passwordError || password === '' ? '#bebebe' : '#1e88ae',
                   backgroundColor:
@@ -279,7 +251,7 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
                 {!loading && (
                   <Text
                     style={{
-                      ...ignoreTheme(BUTTONS.BUTTON4, 'text'),
+                      ...darkTheme(BUTTONS.BUTTON4, 'text'),
                       color:
                         passwordError || password === '' ? '#bebebe' : '#fff',
                     }}>

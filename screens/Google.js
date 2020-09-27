@@ -1,26 +1,31 @@
-import React from 'react';
+/* eslint-disable handle-callback-err */
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
   Text,
   ScrollView,
+  ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from 'react-native-navigation-hooks';
 
 import THEME_DATA from './Globals/ThemeData';
-import {ignoreTheme, callGoogleSignIn} from './Globals/Functions';
+import {darkTheme, callGoogleSignIn} from './Globals/Functions';
 
-import {REMOTE_BACKUP} from './Globals/AsyncStorageEnum';
+import {REMOTE_BACKUP, API_URL, TOKEN} from './Globals/AsyncStorageEnum';
 import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
 
 import CommonDataManager from './Globals/CommonDataManager';
+
+import {PRIMARY} from './Globals/Colors';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const BUTTONS = THEME_DATA.BUTTONS;
   const commonData = CommonDataManager.getInstance();
+  const [loading, setLoading] = useState(false);
   async function handleSignup() {
     // SET CLOUD STORAGE TO NO
     await RNSecureKeyStore.set(REMOTE_BACKUP, 'false', {
@@ -30,7 +35,7 @@ const App: () => React$Node = () => {
     handleNextPage();
   }
 
-  function handleNextPage(data) {
+  function handleNextPage() {
     setStackRoot({
       component: {
         name: 'com.mk1er.Theme',
@@ -66,7 +71,38 @@ const App: () => React$Node = () => {
   async function googleSignIn() {
     const {error, mssg} = await callGoogleSignIn();
     if (error === false) {
-      handleNextPage();
+      const params = {
+        token: commonData.getApiToken(),
+        status: true,
+      };
+      fetch(API_URL + '/remote-status-update', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+      })
+        .then((res) => res.json())
+        .then(async (result) => {
+          if (result.error === false) {
+            await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
+              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+            });
+            await RNSecureKeyStore.set(TOKEN, result.data.token, {
+              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+            });
+            commonData.setRemote(true);
+            handleNextPage();
+          } else {
+            commonData.setRemote(false);
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          commonData.setRemote(false);
+          setLoading(false);
+        });
     } else {
       console.log('SIGN IN FAILURE', mssg);
     }
@@ -97,17 +133,24 @@ const App: () => React$Node = () => {
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={ignoreTheme(BUTTONS.BUTTON4, 'btn')}
+                style={darkTheme(BUTTONS.BUTTON4, 'btn')}
                 onPress={googleSignIn}>
-                <Text style={ignoreTheme(BUTTONS.BUTTON4, 'text')}>
-                  Sign In with Google
+                <Text style={darkTheme(BUTTONS.BUTTON4, 'text')}>
+                  {!loading && 'Sign In with Google'}
+                  {loading && (
+                    <ActivityIndicator
+                      style={styles.loading}
+                      size="large"
+                      color={PRIMARY}
+                    />
+                  )}
                 </Text>
               </TouchableOpacity>
               <Text style={styles.buttonSeperatorText}>OR</Text>
               <TouchableOpacity
-                style={ignoreTheme(BUTTONS.BUTTON5, 'btn')}
+                style={darkTheme(BUTTONS.BUTTON5, 'btn')}
                 onPress={handleSignup}>
-                <Text style={ignoreTheme(BUTTONS.BUTTON5, 'text')}>
+                <Text style={darkTheme(BUTTONS.BUTTON5, 'text')}>
                   Continue without google
                 </Text>
               </TouchableOpacity>

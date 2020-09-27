@@ -20,7 +20,7 @@ import TopBar from './Components/TopBar';
 import Input from './Components/Input';
 
 const App: () => React$Node = () => {
-  const {push} = useNavigation();
+  const {push, pop} = useNavigation();
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState(false);
   const [email, setEmail] = useState('');
@@ -85,7 +85,7 @@ const App: () => React$Node = () => {
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
-        <TopBar title="Sign Up" />
+        <TopBar title="Sign Up" backCallback={() => pop()} />
         <ScrollView
           style={styles.scrollView}
           keyboardShouldPersistTaps={'handled'}>
