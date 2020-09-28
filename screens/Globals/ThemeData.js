@@ -203,6 +203,28 @@ const THEME_DATA = {
       },
     },
   },
+  ANIMATIONS: {
+    PP: {
+      push: {
+        content: {
+          alpha: {
+            from: 0,
+            to: 1,
+            duration: 200,
+          },
+        },
+      },
+      pop: {
+        content: {
+          alpha: {
+            from: 1,
+            to: 0,
+            duration: 100,
+          },
+        },
+      },
+    },
+  },
 };
 
 export default THEME_DATA;

@@ -12,12 +12,13 @@ import Theme from './screens/Theme';
 import OTP from './screens/OTP';
 import Settings from './screens/Settings';
 import Login from './screens/Login';
+import MasterLogin from './screens/MasterLogin';
 import RestoreGoogleBackup from './screens/RestoreGoogleBackup';
 import CreateCredential from './screens/CreateScreens/CreateCredential';
 import {
-  updateThemeMode,
-  updateDatabaseManager,
-  updateCommonData,
+  initDatabaseKey,
+  initCommonData,
+  deleteAllLocalData,
 } from './screens/Globals/Functions';
 import CreateSelector from './screens/Overlays/CreateSelector';
 
@@ -195,6 +196,18 @@ Navigation.registerComponent(
   () => RestoreGoogleBackup,
 );
 
+Navigation.registerComponent(
+  'com.mk1er.MasterLogin',
+  () => (props) => {
+    return (
+      <NavigationProvider value={{componentId: props.componentId}}>
+        <MasterLogin {...props} />
+      </NavigationProvider>
+    );
+  },
+  () => MasterLogin,
+);
+
 Navigation.events().registerBottomTabSelectedListener(
   ({selectedTabIndex, unselectedTabIndex}) => {
     if (selectedTabIndex === 1) {
@@ -231,37 +244,58 @@ Navigation.events().registerModalDismissedListener(({componentName}) => {
   }
 });
 
-let promise = new Promise(async function (resolve, reject) {
-  await updateThemeMode();
-  resolve();
-});
-
-Navigation.events().registerAppLaunchedListener(() => {
-  promise.then((result) => {
-    updateCommonData((loggedIn) => {
-      updateDatabaseManager((masterKeySet) => {
-        Navigation.setRoot({
-          root: {
-            stack: {
-              children: [
-                {
-                  component: {
-                    name: 'com.mk0er.Init',
-                    options: {
-                      statusBar: {
-                        visible: true,
-                      },
-                      topBar: {
-                        visible: 'false',
-                      },
-                    },
+Navigation.events().registerAppLaunchedListener(async () => {
+  await deleteAllLocalData();
+  let initCommon = await initCommonData();
+  let initDb = await initDatabaseKey();
+  console.log('INITIAL COMMON DATA: ', initCommon);
+  if (initCommon.loggedIn && initDb.isMasterKeySet) {
+    // DO LOGGED IN STUFF HERE
+  } else if (initCommon.loggedIn && !initDb.isMasterKeySet) {
+    console.log('DELETE USELESS DATA AND INIT');
+    await deleteAllLocalData();
+    Navigation.setRoot({
+      root: {
+        stack: {
+          children: [
+            {
+              component: {
+                name: 'com.mk0er.Init',
+                options: {
+                  statusBar: {
+                    visible: true,
+                  },
+                  topBar: {
+                    visible: 'false',
                   },
                 },
-              ],
+              },
             },
-          },
-        });
-      });
+          ],
+        },
+      },
     });
-  });
+  } else {
+    Navigation.setRoot({
+      root: {
+        stack: {
+          children: [
+            {
+              component: {
+                name: 'com.mk0er.Init',
+                options: {
+                  statusBar: {
+                    visible: true,
+                  },
+                  topBar: {
+                    visible: 'false',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
 });

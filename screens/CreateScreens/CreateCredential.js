@@ -75,89 +75,101 @@ const App: () => React$Node = () => {
 
   return (
     <>
-      <ScrollView
+      <View
         style={{
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
         <TopBar title="Create Credential" context={componentId} />
         <ScrollView
-          showsHorizontalScrollIndicator={false}
-          style={styles.preview}
-          decelerationRate={0}
-          snapToInterval={DISPLAY_WIDTH} //your element width
-          snapToAlignment={'center'}
-          horizontal={true}>
-          <CredentialCard
-            id="12as325"
-            title={title}
-            content={email === '' ? 'john***@mail.com' : email}
-            style={1}
-            fullView
-            colors={currentColor.colorData}
-          />
-          <CredentialCard
-            id="12as325"
-            title={title}
-            content={email === '' ? 'john***@mail.com' : email}
-            style={2}
-            fullView
-            colors={currentColor.colorData}
-          />
-          <CredentialCard
-            id="12as325"
-            title={title}
-            content={email === '' ? 'john***@mail.com' : email}
-            style={3}
-            fullView
-            colors={currentColor.colorData}
-          />
-        </ScrollView>
-        <ColorPicker selectedUpdate={selectedUpdate} colors={CP_ALL} />
-        <View style={styles.inputsContainer}>
-          <Input title="Title" icon="pencil" value={title} updater={setTitle} />
-          <Input
-            title="Email"
-            icon="envelope"
-            value={email}
-            updater={setEmail}
-          />
-          <Input
-            title="Password"
-            icon="unlock-alt"
-            value={password}
-            updater={setPassword}
-          />
-          <InputTextArea
-            placeholder="Other details like security question, etc."
-            value={otherData}
-            updater={setOtherData}
-          />
-          <View style={styles.bottomButtonContainer}>
-            <TouchableOpacity
-              style={{
-                ...darkTheme(BUTTONS.BUTTON4, 'btn'),
-                borderColor: title === '' ? '#bebebe' : '#1e88ae',
-              }}
-              disabled={title === ''}
-              onPress={createCredential}>
-              <Text
+          keyboardShouldPersistTaps={'handled'}
+          style={styles.innerContainer}>
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            style={styles.preview}
+            decelerationRate={0}
+            snapToInterval={DISPLAY_WIDTH} //your element width
+            snapToAlignment={'center'}
+            horizontal={true}>
+            <CredentialCard
+              id="12as325"
+              title={title}
+              content={email === '' ? 'john***@mail.com' : email}
+              style={1}
+              fullView
+              colors={currentColor.colorData}
+            />
+            <CredentialCard
+              id="12as325"
+              title={title}
+              content={email === '' ? 'john***@mail.com' : email}
+              style={2}
+              fullView
+              colors={currentColor.colorData}
+            />
+            <CredentialCard
+              id="12as325"
+              title={title}
+              content={email === '' ? 'john***@mail.com' : email}
+              style={3}
+              fullView
+              colors={currentColor.colorData}
+            />
+          </ScrollView>
+          <ColorPicker selectedUpdate={selectedUpdate} colors={CP_ALL} />
+          <View style={styles.inputsContainer}>
+            <Input
+              title="Title"
+              icon="pencil"
+              value={title}
+              updater={setTitle}
+            />
+            <Input
+              title="Email"
+              icon="envelope"
+              value={email}
+              updater={setEmail}
+            />
+            <Input
+              title="Password"
+              icon="unlock-alt"
+              value={password}
+              updater={setPassword}
+            />
+            <InputTextArea
+              placeholder="Other details like security question, etc."
+              value={otherData}
+              updater={setOtherData}
+            />
+            <View style={styles.bottomButtonContainer}>
+              <TouchableOpacity
                 style={{
-                  ...darkTheme(BUTTONS.BUTTON4, 'text'),
-                  color: title === '' ? '#bebebe' : '#1e88ae',
-                }}>
-                CREATE
-              </Text>
-            </TouchableOpacity>
+                  ...darkTheme(BUTTONS.BUTTON4, 'btn'),
+                  borderColor: title === '' ? '#bebebe' : '#1e88ae',
+                }}
+                disabled={title === ''}
+                onPress={createCredential}>
+                <Text
+                  style={{
+                    ...darkTheme(BUTTONS.BUTTON4, 'text'),
+                    color: title === '' ? '#bebebe' : '#1e88ae',
+                  }}>
+                  CREATE
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  innerContainer: {
     flex: 1,
   },
   preview: {

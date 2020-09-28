@@ -7,6 +7,7 @@ import {
   USER_PHONE,
   REMOTE_BACKUP,
   TOKEN,
+  REMOTE_BACKUP_STATUS,
 } from './AsyncStorageEnum';
 import AsyncStorage from '@react-native-community/async-storage';
 import {NativeModules} from 'react-native';
@@ -17,68 +18,144 @@ import {GoogleSignin} from '@react-native-community/google-signin';
 import RNFS from 'react-native-fs';
 import {DATABASE_NAME} from './AsyncStorageEnum.js';
 import {statusCodes} from '@react-native-community/google-signin';
+import Realm from 'realm';
 
 var Aes = NativeModules.Aes;
 
-export const updateThemeMode = async () => {
+export const refreshToken = async (token) => {
   try {
-    const value = await AsyncStorage.getItem(THEME_MODE);
-    if (!value) {
-      return;
-    }
-    THEME_DATA.C_THEME_MODE = value;
-    THEME_DATA.UPDATED = true;
-    return;
-  } catch (error) {
-    // Error saving data
+    let commonData = CommonDataManager.getInstance();
+    await RNSecureKeyStore.set(TOKEN, token, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    commonData.setApiToken(token);
+    return true;
+  } catch (e) {
+    return true;
   }
 };
 
-export const updateCommonData = (call) => {
+export const updateRemoteStatus = async (status) => {
+  try {
+    let commonData = CommonDataManager.getInstance();
+    await RNSecureKeyStore.set(REMOTE_BACKUP, status, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    commonData.setRemote(status === 'true');
+    return true;
+  } catch (e) {
+    return true;
+  }
+};
+
+export const storeCommonData = async (name, email, phone, token) => {
+  try {
+    let commonData = CommonDataManager.getInstance();
+    await RNSecureKeyStore.set(USER_NAME, name, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    await RNSecureKeyStore.set(USER_EMAIL, email, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    await RNSecureKeyStore.set(USER_PHONE, phone, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    await RNSecureKeyStore.set(TOKEN, token, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    await RNSecureKeyStore.set(SALT, '', {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    commonData.setSignedIn(true);
+    commonData.setUsername(name);
+    commonData.setEmail(email);
+    commonData.setPhone(phone);
+    commonData.setApiToken(token);
+  } catch (e) {
+    console.error('ERROR SAVING COMMON DATA', e);
+  }
+};
+
+export const deleteDatabaseFile = async () => {
+  try {
+    Realm.deleteFile({path: DATABASE_NAME});
+  } catch (e) {}
+};
+
+export const deleteAllLocalData = async () => {
+  try {
+    await RNSecureKeyStore.remove(USER_NAME);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(USER_EMAIL);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(USER_PHONE);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(TOKEN);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(REMOTE_BACKUP);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(MASTER_KEY);
+  } catch (e) {}
+  try {
+    await RNSecureKeyStore.remove(SALT);
+  } catch (e) {}
+};
+
+export const initCommonData = async () => {
+  // STATUS
   let commonData = CommonDataManager.getInstance();
-  RNSecureKeyStore.get(USER_NAME).then(
-    (name) => {
-      RNSecureKeyStore.get(USER_EMAIL).then((email) => {
-        RNSecureKeyStore.get(USER_PHONE).then((age) => {
-          commonData.setSignedIn(true);
-          commonData.setUsername(name);
-          commonData.setEmail(email);
-          commonData.setAge(age);
-          RNSecureKeyStore.get(REMOTE_BACKUP)
-            .then(
-              (remote) => {
-                if (remote === 'true') {
-                  GoogleSignin.configure({
-                    scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
-                    webClientId:
-                      '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
-                    // offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
-                    // hostedDomain: '', // specifies a hosted domain restriction
-                    // loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
-                    // forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
-                    // accountName: '', // [Android] specifies an account name on the device that should be used
-                    // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
-                  });
-                }
-                commonData.setRemote(remote === 'true');
-              },
-              (err) => {
-                console.error('REMOTE PAGE NEVER LOADED');
-                commonData.setRemote(false);
-              },
-            )
-            .finally(() => {
-              call(true);
-            });
+  let status = {
+    loggedIn: false,
+    remotePageLoaded: false,
+    themePageLoaded: false,
+  };
+  try {
+    const name = await RNSecureKeyStore.get(USER_NAME);
+    const email = await RNSecureKeyStore.get(USER_EMAIL);
+    const phone = await RNSecureKeyStore.get(USER_PHONE);
+    const token = await RNSecureKeyStore.get(TOKEN);
+    commonData.setSignedIn(true);
+    commonData.setUsername(name);
+    commonData.setEmail(email);
+    commonData.setPhone(phone);
+    commonData.setApiToken(token);
+    status.loggedIn = true;
+  } catch (e) {
+    console.error(e);
+    commonData.setSignedIn(false);
+  }
+  if (commonData.getSignedIn()) {
+    try {
+      const remote = await RNSecureKeyStore.get(REMOTE_BACKUP);
+      console.log('REMOTE', remote);
+      if (remote === 'true') {
+        GoogleSignin.configure({
+          scopes: ['https://www.googleapis.com/auth/drive.appdata'],
+          webClientId:
+            '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com',
         });
-      });
-    },
-    (err) => {
-      // console.log('user not signed in');
-      commonData.setSignedIn(false);
-      call(false);
-    },
-  );
+      }
+      commonData.setRemote(remote === 'true');
+      status.remotePageLoaded = true;
+    } catch (e) {
+      console.error(e);
+      commonData.setRemote(false);
+    }
+  }
+  try {
+    const value = await AsyncStorage.getItem(THEME_MODE);
+    THEME_DATA.C_THEME_MODE = value;
+    THEME_DATA.UPDATED = true;
+    status.themePageLoaded = true;
+  } catch (e) {
+    console.error(e);
+  }
+  return status;
 };
 
 export const darkTheme = (obj, sel) => {
@@ -101,34 +178,44 @@ export const ignoreTheme = (obj, sel) => {
   return obj[sel];
 };
 
-const generateKey = (password, salt, cost, length) =>
+export const generateKey = (password, salt, cost, length) =>
   Aes.pbkdf2(password, salt, cost, length);
 
-export const updateDatabaseManager = (call) => {
+export const storeDatabaseCreds = async (mKey, salt = '') => {
+  try {
+    let commonData = CommonDataManager.getInstance();
+    await RNSecureKeyStore.set(MASTER_KEY, mKey, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    await RNSecureKeyStore.set(SALT, salt, {
+      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+    });
+    const key = await generateKey(mKey, salt, 5000, 256);
+    commonData.setMasterKey(key);
+    commonData.setMasterKeyStatus(true);
+    commonData.setSaltStatus(salt === '' ? false : true);
+  } catch (e) {
+    console.error('ERROR SAVING COMMON DATA', e);
+  }
+};
+
+export const initDatabaseKey = async () => {
   let commonData = CommonDataManager.getInstance();
-  RNSecureKeyStore.get(MASTER_KEY).then(
-    (res) => {
-      RNSecureKeyStore.get(SALT).then(
-        (salt) => {
-          RNSecureKeyStore.get(TOKEN).then((token) => {
-            generateKey(res, salt, 5000, 256).then((key) => {
-              commonData.setApiToken(token);
-              commonData.setMasterKey(key);
-              commonData.setMasterKeyStatus(true);
-              commonData.setSaltStatus(salt === '' ? false : true);
-              call(true);
-            });
-          });
-        },
-        (errSalt) => {},
-      );
-    },
-    (err) => {
-      commonData.setMasterKeyStatus(false);
-      console.error('MASTER KEY NOT SET');
-      call(false);
-    },
-  );
+  let status = {
+    isMasterKeySet: false,
+  };
+  try {
+    const mKey = await RNSecureKeyStore.get(MASTER_KEY);
+    const salt = await RNSecureKeyStore.get(SALT);
+    const key = await generateKey(mKey, salt, 5000, 256);
+    commonData.setMasterKey(key);
+    commonData.setMasterKeyStatus(true);
+    commonData.setSaltStatus(salt === '' ? false : true);
+    status.isMasterKeySet = true;
+  } catch (e) {
+    console.error('MASTER KEY NOT SET', e);
+  }
+  return status;
 };
 
 export const convertStringToByteArray = (str) => {
@@ -143,15 +230,9 @@ export const convertStringToByteArray = (str) => {
 export async function callGoogleSignIn() {
   const commonData = CommonDataManager.getInstance();
   GoogleSignin.configure({
-    scopes: ['https://www.googleapis.com/auth/drive.appdata'], // what API you want to access on behalf of the user, default is email and profile
+    scopes: ['https://www.googleapis.com/auth/drive.appdata'],
     webClientId:
-      '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
-    // offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
-    // hostedDomain: '', // specifies a hosted domain restriction
-    // loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
-    // forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
-    // accountName: '', // [Android] specifies an account name on the device that should be used
-    // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] optional, if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+      '90184904422-urjbjla8slor0c0qh3e6nvir4htdn60h.apps.googleusercontent.com',
   });
   try {
     await GoogleSignin.hasPlayServices();
@@ -199,9 +280,9 @@ export function performMultipartUpload(id, params, progress, call) {
       if (id !== null) {
         deleteFile(id, params.headers.Authorization, (err, resp) => {
           if (err) {
-            console.error('ERROR DELETING FILE ', resp);
+            // console.error('ERROR DELETING FILE ', resp);
           } else {
-            console.log('SUCCESS DELETING FILE ', resp);
+            console.log('SUCCESS DELETING FILE ');
           }
           call(responseJson);
         });
@@ -267,7 +348,7 @@ export function downloadDatabaseFile(id, token, begin, progress) {
       Authorization: `Bearer ${token}`,
     },
     fromUrl: `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
-    toFile: RNFS.DocumentDirectoryPath + '/BITBOX.realm',
+    toFile: RNFS.DocumentDirectoryPath + '/' + DATABASE_NAME,
     begin,
     progress,
     background: true,

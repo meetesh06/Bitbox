@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -13,28 +13,26 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Hideo} from 'react-native-textinput-effects';
 import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
-import {darkThemeColor, darkTheme} from './Globals/Functions';
-
+import {
+  darkThemeColor,
+  darkTheme,
+  generateKey,
+  deleteDatabaseFile,
+  storeDatabaseCreds,
+} from './Globals/Functions';
+import {goToHome} from './Navigators/HomeNav';
 import {B_CONTAINER, B_HIGHLIGHT, PRIMARY} from './Globals/Colors';
-
-import CheckBox from '@react-native-community/checkbox';
-
 import TopBar from './Components/TopBar';
+import RealmManager from '../database/realm';
 
-import DeviceInfo from 'react-native-device-info';
-
-import {API_URL} from './Globals/AsyncStorageEnum';
-
-const App: () => React$Node = ({salt = '', name, email, phone}) => {
-  const {setStackRoot, pop} = useNavigation();
+const App: () => React$Node = ({salt = '', newFile}) => {
+  const {setStackRoot} = useNavigation();
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+  const [unlockError, setUnlockError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [creationError, setCreationError] = useState(false);
-  let otpToken = '';
 
   const BUTTONS = THEME_DATA.BUTTONS;
-  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
   function validateExpression(expression, val, state, trigger) {
     if (!expression.test(val)) {
@@ -45,76 +43,51 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
     state(val);
   }
 
-  function nextScreen() {
-    setStackRoot({
-      component: {
-        name: 'com.mk1er.OTP',
-        options: {
-          topBar: {
-            visible: false,
-          },
-          animations: ANIMATIONS.PP,
-        },
-        passProps: {
-          otpToken,
-          name,
-          email,
-          phone,
-          password,
-        },
-      },
-    });
+  // function storeDataAsync(masterKey, call) {
+  //   Promise.all([
+  //     RNSecureKeyStore.set(MASTER_KEY, masterKey, {
+  //       accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+  //     }),
+  //     RNSecureKeyStore.set(SALT, '', {
+  //       accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+  //     }),
+  //   ])
+  //     .then((res) => {
+  //       call();
+  //     })
+  //     .catch((err) => {
+  //       console.log(err, 'THERE WAS AN ERROR ');
+  //     });
+  // }
+
+  async function createNewDatabase() {
+    await storeDatabaseCreds(password);
+    await deleteDatabaseFile();
+    RealmManager.reIssueInstance();
+    goToHome(setStackRoot);
   }
 
   async function handleNext() {
     setLoading(true);
-    let uniqueId = DeviceInfo.getUniqueId();
-    let systemVersion = DeviceInfo.getSystemVersion();
-    let systemName = DeviceInfo.getSystemName();
-    let hasNotch = DeviceInfo.hasNotch();
-    let type = DeviceInfo.getDeviceType();
-    let deviceId = DeviceInfo.getDeviceId();
-    let params = {
-      username: name,
-      email,
-      phone,
-      deviceInfo: {
-        systemVersion,
-        systemName,
-        hasNotch,
-        type,
-        deviceId,
-      },
-      deviceUUID: uniqueId,
-      master: password,
-    };
-
-    console.log(JSON.stringify(params));
-    fetch(API_URL + '/new-user-registration', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        console.log(result);
-        if (result.error === false) {
-          otpToken = result.data.token;
-          nextScreen();
-        } else {
-          console.error('SIGNUP ERROR: ', result.mssg);
-          setLoading(false);
-          setCreationError(result.mssg);
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        setCreationError('UNKNOWN ERROR OCCURED 7001');
-        console.error('SIGNUP ERROR: ', err);
-      });
+    // TRY REALM LOGIN
+    if (newFile !== undefined && newFile === true) {
+      return createNewDatabase();
+    }
+    let key = await generateKey(password, salt, 5000, 256);
+    try {
+      let a = RealmManager.testInstance(key);
+      a.close();
+      console.log('SUCCESSFUL KEY', key);
+      await storeDatabaseCreds(password);
+      RealmManager.reIssueInstance();
+      goToHome(setStackRoot);
+      setUnlockError('SUCCESSFULLY UNLOCKED');
+    } catch (e) {
+      console.error('ERROR UNLOCKING DATABASE', e);
+      setUnlockError('ERROR UNLOCKING DATABASE');
+      setPasswordError(true);
+      setLoading(false);
+    }
   }
 
   return (
@@ -124,7 +97,7 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
           ...styles.container,
           backgroundColor: darkThemeColor(B_CONTAINER),
         }}>
-        <TopBar title="Sign Up" backCallback={() => pop()} />
+        <TopBar title="Enter Master Password" />
         <ScrollView
           style={styles.scrollView}
           keyboardShouldPersistTaps={'handled'}>
@@ -179,56 +152,33 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
               Can contain special characters {'\n'}
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-            }}>
-            <CheckBox
-              tintColors={{
-                true: darkThemeColor(B_HIGHLIGHT),
-                false: darkThemeColor(B_HIGHLIGHT),
-              }}
-              disabled={true}
-              value={false}
-            />
-            <Text
-              style={{
-                ...styles.checkboxText,
-                color: darkThemeColor(B_HIGHLIGHT),
-              }}>
-              Enable Remote Locking. (Under Dev Testing)
-            </Text>
-          </View>
           <View>
             <Text
               style={{...styles.infoText1, color: darkThemeColor(B_HIGHLIGHT)}}>
-              Your master password will be used to encrypt all your data. It is
-              a good idea to write it down somewhere safe.
+              {newFile === undefined &&
+                unlockError === '' &&
+                'Please enter the master password to unlock your bitbox'}
+              {newFile === undefined && unlockError !== '' && unlockError}
+              {newFile !== undefined &&
+                newFile === true &&
+                'Create a master password for your bitbox file'}
             </Text>
           </View>
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
-              {!loading && creationError !== '' && (
-                <Text
-                  style={{
-                    fontFamily: 'Poppins-Bold',
-                    fontSize: 10,
-                    textAlign: 'center',
-                    color: 'red',
-                  }}>
-                  {creationError}
-                </Text>
-              )}
               <TouchableOpacity
                 style={{
                   ...darkTheme(BUTTONS.BUTTON4, 'btn'),
                   borderColor:
-                    passwordError || password === '' ? '#bebebe' : '#1e88ae',
+                    loading || passwordError || password === ''
+                      ? '#bebebe'
+                      : '#1e88ae',
                   backgroundColor:
-                    passwordError || password === '' ? '#fff' : '#1e88ae',
+                    loading || passwordError || password === ''
+                      ? '#fff'
+                      : '#1e88ae',
                 }}
-                disabled={passwordError || password === ''}
+                disabled={loading || passwordError || password === ''}
                 onPress={handleNext}>
                 {!loading && (
                   <Text
@@ -237,7 +187,8 @@ const App: () => React$Node = ({salt = '', name, email, phone}) => {
                       color:
                         passwordError || password === '' ? '#bebebe' : '#fff',
                     }}>
-                    Continue
+                    {newFile === undefined && 'UNLOCK'}
+                    {newFile !== undefined && newFile === true && 'CREATE'}
                   </Text>
                 )}
                 {loading && (

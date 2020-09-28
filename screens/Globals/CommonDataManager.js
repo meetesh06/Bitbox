@@ -5,7 +5,7 @@ export default class CommonDataManager {
   _saltUsed = null;
   _username = null;
   _email = null;
-  _age = null;
+  _phone = null;
   _remote = false;
   _signedIn = false;
   _masterKeySet = false;
@@ -55,12 +55,12 @@ export default class CommonDataManager {
     this._email = email;
   }
 
-  getAge() {
-    return this._age;
+  getPhone() {
+    return this._phone;
   }
 
-  setAge(age) {
-    this._age = age;
+  setPhone(phone) {
+    this._phone = phone;
   }
 
   getRemote() {

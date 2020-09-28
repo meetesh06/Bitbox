@@ -13,25 +13,18 @@ import {useNavigation} from 'react-native-navigation-hooks';
 import {B_CONTAINER, PRIMARY, B_HIGHLIGHT} from './Globals/Colors';
 
 import THEME_DATA from './Globals/ThemeData';
-import {darkThemeColor, darkTheme} from './Globals/Functions';
+import {
+  darkThemeColor,
+  darkTheme,
+  storeCommonData,
+  deleteDatabaseFile,
+} from './Globals/Functions';
 import Input from './Components/Input';
 
 import TopBar from './Components/TopBar';
 import OTPTextInput from 'react-native-otp-textinput';
-import {
-  USER_NAME,
-  USER_EMAIL,
-  USER_PHONE,
-  API_URL,
-  TOKEN,
-} from './Globals/AsyncStorageEnum';
-import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
-import {MASTER_KEY, SALT} from './Globals/Database';
-import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
-import CommonDataManager from './Globals/CommonDataManager';
+import {API_URL} from './Globals/AsyncStorageEnum';
 import DeviceInfo from 'react-native-device-info';
-
-import Realm from 'realm';
 
 const App: () => React$Node = () => {
   const {setStackRoot, pop} = useNavigation();
@@ -43,7 +36,7 @@ const App: () => React$Node = () => {
   const [OTPSent, setOTPSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const BUTTONS = THEME_DATA.BUTTONS;
-  const commonData = CommonDataManager.getInstance();
+  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
   const [loginError, setLoginError] = useState(false);
 
@@ -54,32 +47,6 @@ const App: () => React$Node = () => {
       trigger(false);
     }
     state(val);
-  }
-
-  function storeDataAsync(name, email1, phone, token, call) {
-    Promise.all([
-      RNSecureKeyStore.set(USER_NAME, name, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_EMAIL, email1, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_PHONE, phone, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(TOKEN, token, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(SALT, '', {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-    ])
-      .then((res) => {
-        call();
-      })
-      .catch((err) => {
-        console.log(err, 'THERE WAS AN ERROR ');
-      });
   }
 
   async function handleSendOTP() {
@@ -150,61 +117,50 @@ const App: () => React$Node = () => {
       body: JSON.stringify(params),
     })
       .then((res) => res.json())
-      .then((result) => {
+      .then(async (result) => {
         console.log(result);
         if (result.error === false) {
           // SAVE TOKEN TO LOCAL STORAGE
           // CALL NEXT SCREEN
-          setLoading(false);
-          storeDataAsync(
+          await storeCommonData(
             result.data.name,
             result.data.email,
             result.data.phone,
             result.data.token,
-            () => {
-              updateCommonData(() => {
-                updateDatabaseManager(() => {
-                  if (result.data.remoteBackup) {
-                    console.log('USER HAS REMOTE BACKUP ON');
-                    setStackRoot({
-                      component: {
-                        name: 'com.mk1er.RestoreGoogleBackup',
-                        options: {
-                          topBar: {
-                            visible: false,
-                          },
-                          animations: {
-                            push: {
-                              content: {
-                                alpha: {
-                                  from: 0,
-                                  to: 1,
-                                  duration: 200,
-                                },
-                              },
-                            },
-                            pop: {
-                              content: {
-                                alpha: {
-                                  from: 1,
-                                  to: 0,
-                                  duration: 100,
-                                },
-                              },
-                            },
-                          },
-                        },
-                      },
-                    });
-                    // GO TO DOWNLOAD BACKUP AND CONTINUE
-                  } else {
-                    console.log('NO REMOTE BACKUP, ASK TO ENABLE');
-                    // GO TO HOME PAGE
-                  }
-                });
-              });
-            },
           );
+          await deleteDatabaseFile();
+          if (result.data.remoteBackup) {
+            console.log('USER HAS REMOTE BACKUP ON');
+            setStackRoot({
+              component: {
+                name: 'com.mk1er.RestoreGoogleBackup',
+                options: {
+                  topBar: {
+                    visible: false,
+                  },
+                  animations: ANIMATIONS.PP,
+                },
+              },
+            });
+            // GO TO DOWNLOAD BACKUP AND CONTINUE
+          } else {
+            console.log('NO REMOTE BACKUP, ASK TO ENABLE');
+            // GO TO HOME PAGE
+            setStackRoot({
+              component: {
+                name: 'com.mk1er.MasterLogin',
+                options: {
+                  topBar: {
+                    visible: false,
+                  },
+                  animations: ANIMATIONS.PP,
+                },
+                passProps: {
+                  newFile: true,
+                },
+              },
+            });
+          }
         } else {
           console.error('SIGNUP ERROR: ', result.mssg);
           setLoading(false);
@@ -216,43 +172,6 @@ const App: () => React$Node = () => {
         console.error('SIGNUP ERROR: ', err);
         setLoading(false);
       });
-  }
-
-  function nextScreen() {
-    // setStackRoot({
-    //   component: {
-    //     name: 'com.mk1er.Google',
-    //     options: {
-    //       topBar: {
-    //         visible: false,
-    //       },
-    //       animations: {
-    //         push: {
-    //           content: {
-    //             alpha: {
-    //               from: 0,
-    //               to: 1,
-    //               duration: 200,
-    //             },
-    //           },
-    //         },
-    //         pop: {
-    //           content: {
-    //             alpha: {
-    //               from: 1,
-    //               to: 0,
-    //               duration: 100,
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //     passProps: {
-    //       otpToken,
-    //       email,
-    //     },
-    //   },
-    // });
   }
 
   function updateOTP(text) {

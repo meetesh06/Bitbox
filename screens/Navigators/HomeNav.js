@@ -1,7 +1,9 @@
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import THEME_DATA from '../Globals/ThemeData';
-import {darkThemeColor, updateThemeMode} from '../Globals/Functions';
+import {darkThemeColor} from '../Globals/Functions';
 import {PRIMARY, B_BOTTOMNAV, GRAY} from '../Globals/Colors';
+import THEME_DATA from '../Globals/ThemeData';
+
+const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
 const layouts: Promise<Layouts> = new Promise((resolve) => {
   Promise.all([
@@ -93,26 +95,7 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
           topBar: {
             visible: false,
           },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 600,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
+          animations: ANIMATIONS.PP,
         },
       },
     });
@@ -121,12 +104,10 @@ const layouts: Promise<Layouts> = new Promise((resolve) => {
 
 export function goToHome(navIntent) {
   layouts.then((result) => {
-    updateThemeMode().then(() => {
-      result.bottomTabs.options.bottomTabs.backgroundColor = darkThemeColor(
-        B_BOTTOMNAV,
-      );
-      console.log(result.bottomTabs.options.bottomTabs);
-      navIntent(result);
-    });
+    result.bottomTabs.options.bottomTabs.backgroundColor = darkThemeColor(
+      B_BOTTOMNAV,
+    );
+    console.log(result.bottomTabs.options.bottomTabs);
+    navIntent(result);
   });
 }

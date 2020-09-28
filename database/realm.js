@@ -22,9 +22,19 @@ Credentials.schema = {
 
 export default class RealmManager {
   static _realmInstance = null;
+
   static getInstance() {
-    if (RealmManager._realmInstance === null || !this._realmInstance.isClosed) {
-      RealmManager.reIssueInstance();
+    if (
+      this._realmInstance === null ||
+      (this._realmInstance !== null && this._realmInstance.isClosed)
+    ) {
+      try {
+        console.log('REISSUE INSTANCE');
+        RealmManager.reIssueInstance();
+      } catch (e) {
+        console.error('DATABASE ERROR', e);
+        return null;
+      }
     }
     return this._realmInstance;
   }
@@ -34,10 +44,25 @@ export default class RealmManager {
     if (!commonData.getMasterKeyStatus()) {
       console.error('ATTEMPTED TO CALL DB FILE USING BLANK KEY');
     }
-    RealmManager._realmInstance = new Realm({
+    this._realmInstance = new Realm({
       schema: [Credentials.schema],
       path: DATABASE_NAME,
       encryptionKey: convertStringToByteArray(commonData.getMasterKey()),
     });
+  }
+
+  static testInstance(key) {
+    try {
+      let a = new Realm({
+        schema: [Credentials.schema],
+        path: DATABASE_NAME,
+        encryptionKey: convertStringToByteArray(key),
+      });
+      console.log(a);
+      return a;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 }

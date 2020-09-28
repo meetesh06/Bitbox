@@ -20,37 +20,48 @@ import {
   callGoogleSignIn,
   getDatabaseFileList,
   downloadDatabaseFile,
+  refreshToken,
+  updateRemoteStatus,
 } from './Globals/Functions';
 
 import TopBar from './Components/TopBar';
-import {API_URL, REMOTE_BACKUP, TOKEN} from './Globals/AsyncStorageEnum';
-import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+import {API_URL} from './Globals/AsyncStorageEnum';
 import CommonDataManager from './Globals/CommonDataManager';
 
 import {GoogleSignin} from '@react-native-community/google-signin';
 
-import Realm from 'realm';
-
 const App: () => React$Node = () => {
-  const {setStackRoot, pop} = useNavigation();
-  const [email, setEmail] = useState('');
-  const [googleSignedIn, setGoogleSignedIn] = useState(false);
+  const {setStackRoot} = useNavigation();
   const [downloading, setDownloading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState('STARTING');
+  const [creationError, setCreationError] = useState(false);
   const BUTTONS = THEME_DATA.BUTTONS;
-  const commonData = CommonDataManager.getInstance();
+  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
-  async function handleNextPage() {
-    console.log('NEXT PAGE');
+  function handleNextPage() {
+    setStackRoot({
+      component: {
+        name: 'com.mk1er.MasterLogin',
+        options: {
+          topBar: {
+            visible: false,
+          },
+          animations: ANIMATIONS.PP,
+        },
+      },
+    });
   }
 
   async function googleSignIn() {
+    const commonData = CommonDataManager.getInstance();
     const {error, mssg} = await callGoogleSignIn();
     setLoading(true);
     console.log('USING TOKEN: ', commonData.getApiToken());
     if (error === false) {
       const tokens = await GoogleSignin.getTokens();
       commonData.setRemoteTokens(tokens);
+      commonData.setGoogleSignedInSession(true);
       const params = {
         token: commonData.getApiToken(),
         status: true,
@@ -67,14 +78,15 @@ const App: () => React$Node = () => {
         .then(async (result) => {
           console.log('UPDATE: ', result);
           if (result.error === false) {
-            await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
-              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-            });
-            await RNSecureKeyStore.set(TOKEN, result.data.token, {
-              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-            });
-            commonData.setRemote(true);
-            commonData.setApiToken(result.data.token);
+            try {
+              await refreshToken(result.data.token);
+              await updateRemoteStatus('true');
+            } catch (e) {
+              setCreationError('UNKNOWN ERROR OCCURED');
+              console.error('TOKEN REFRESH SAVING ERROR', e);
+              return setLoading(false);
+            }
+
             getDatabaseFileList(commonData.getRemoteTokens().accessToken)
               .then((res) => res.json())
               .then((val) => {
@@ -88,30 +100,40 @@ const App: () => React$Node = () => {
                     val.files[0].id,
                     commonData.getRemoteTokens().accessToken,
                     () => console.log('Download Started'),
-                    (p) => console.log('PROGRESS: ', p),
+                    (progress) => {
+                      let progressPercent =
+                        (progress.loaded / progress.total) * 100;
+                      setDownloadProgress(progressPercent + '%');
+                    },
                   )
                     .then((comp) => {
                       console.log(comp);
                       if (comp.statusCode === 200) {
-                        console.log('DOWNLOAD SUCCESS');
+                        setDownloadProgress('DOWNLOADED');
                         handleNextPage();
+                      } else {
+                        setDownloadProgress('DOWNLOAD FAILED');
+                        console.error('DOWNLOAD FAILED');
+                        setDownloading(false);
                       }
-                      setDownloading(false);
                     })
                     .catch((e) => {
                       console.log('ERROR: ', e);
+                      setDownloadProgress('DOWNLOAD FAILED');
+                      setDownloading(false);
                     });
+                } else {
+                  // GOTO MASTER KEY PAGE, WITH NO EXISTIG BACKUP TO BE LOADAED
                 }
               })
               .catch((err) => {
                 setDownloading(true);
               });
-            commonData.setGoogleSignedInSession(true);
-            setGoogleSignedIn(true);
           } else {
+            setCreationError(result.mssg);
+            setLoading(false);
             commonData.setRemote(false);
           }
-          setLoading(false);
         })
         .catch((err) => {
           commonData.setRemote(false);
@@ -121,42 +143,6 @@ const App: () => React$Node = () => {
       console.log('SIGN IN FAILURE', mssg);
       setLoading(false);
     }
-  }
-
-  async function continueWithoutLogin() {
-    const params = {
-      token: commonData.getApiToken(),
-      status: false,
-    };
-    commonData.setGoogleSignedInSession(false);
-    fetch(API_URL + '/remote-status-update', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    })
-      .then((res) => res.json())
-      .then(async (result) => {
-        if (result.error === false) {
-          await RNSecureKeyStore.set(REMOTE_BACKUP, 'false', {
-            accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          });
-          await RNSecureKeyStore.set(TOKEN, result.data.token, {
-            accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          });
-          commonData.setRemote(false);
-          commonData.setApiToken(result.data.token);
-        } else {
-          commonData.setRemote(false);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        commonData.setRemote(false);
-        setLoading(false);
-      });
   }
 
   return (
@@ -170,63 +156,45 @@ const App: () => React$Node = () => {
         <ScrollView
           style={styles.scrollView}
           keyboardShouldPersistTaps={'handled'}>
-          {downloading && (
-            <View
+          <View
+            style={{
+              ...styles.cardContainer,
+              backgroundColor: darkThemeColor(B_INNER),
+            }}>
+            <Text
               style={{
-                backgroundColor: darkThemeColor(B_INNER),
-                height: 300,
-                borderRadius: 12,
-                padding: 20,
-                justifyContent: 'center',
+                fontFamily: 'Poppins-Bold',
+                fontSize: 20,
+                textAlign: 'center',
               }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Bold',
-                  fontSize: 20,
-                  textAlign: 'center',
-                }}>
-                A backup was found in your google drive, restoring
-              </Text>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Regular',
-                  fontSize: 14,
-                  textAlign: 'center',
-                }}>
-                Downloading might take a few minutes.
-              </Text>
-            </View>
-          )}
-          {!downloading && (
-            <View
+              {downloading &&
+                'A backup was found in your google drive, restoring'}
+              {!downloading &&
+                'Login with google to restore your existing backup'}
+            </Text>
+            <Text
               style={{
-                backgroundColor: darkThemeColor(B_INNER),
-                height: 300,
-                borderRadius: 12,
-                padding: 20,
-                justifyContent: 'center',
+                fontFamily: 'Poppins-Regular',
+                fontSize: 14,
+                textAlign: 'center',
               }}>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Bold',
-                  fontSize: 20,
-                  textAlign: 'center',
-                }}>
-                Please login with google to restore existing backup.
-              </Text>
-              <Text
-                style={{
-                  fontFamily: 'Poppins-Regular',
-                  fontSize: 14,
-                  textAlign: 'center',
-                }}>
-                If there are no backups, a new backup will be created.
-              </Text>
-            </View>
-          )}
-
+              {!downloading && 'Downloading the data might take a few minutes.'}
+              {downloading && downloadProgress}
+            </Text>
+          </View>
           <View style={styles.submitContainer}>
             <View style={styles.buttonContainer}>
+              {!loading && creationError !== '' && (
+                <Text
+                  style={{
+                    fontFamily: 'Poppins-Bold',
+                    fontSize: 10,
+                    textAlign: 'center',
+                    color: 'red',
+                  }}>
+                  {creationError}
+                </Text>
+              )}
               <TouchableOpacity
                 style={darkTheme(BUTTONS.BUTTON4, 'btn')}
                 onPress={googleSignIn}>
@@ -241,22 +209,6 @@ const App: () => React$Node = () => {
                   )}
                 </Text>
               </TouchableOpacity>
-              {!loading && (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                  }}>
-                  <Text style={styles.buttonSeperatorText}>OR</Text>
-                  <TouchableOpacity
-                    style={darkTheme(BUTTONS.BUTTON5, 'btn')}
-                    onPress={continueWithoutLogin}>
-                    <Text style={darkTheme(BUTTONS.BUTTON5, 'text')}>
-                      Continue without backup (existing backup will be deleted)
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
             </View>
           </View>
         </ScrollView>
@@ -282,11 +234,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonSeperatorText: {
-    padding: 10,
-    fontFamily: 'Poppins-Thin',
-    textAlign: 'center',
-    color: '#a0a0a0',
+  cardContainer: {
+    height: 300,
+    borderRadius: 12,
+    padding: 20,
+    justifyContent: 'center',
   },
 });
 

@@ -28,6 +28,7 @@ const App: () => React$Node = () => {
   //   );
   // }
   const BUTTONS = THEME_DATA.BUTTONS;
+  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
   function signupScreen() {
     push({
@@ -37,26 +38,7 @@ const App: () => React$Node = () => {
           topBar: {
             visible: false,
           },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 300,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
+          animations: ANIMATIONS.PP,
         },
       },
     });
@@ -70,26 +52,7 @@ const App: () => React$Node = () => {
           topBar: {
             visible: false,
           },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 300,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
+          animations: ANIMATIONS.PP,
         },
       },
     });

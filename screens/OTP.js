@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   View,
@@ -10,23 +10,20 @@ import {
 import {useNavigation} from 'react-native-navigation-hooks';
 
 import {B_CONTAINER, PRIMARY, B_HIGHLIGHT} from './Globals/Colors';
+import {DATABASE_NAME} from './Globals/AsyncStorageEnum.js';
 
 import THEME_DATA from './Globals/ThemeData';
-import {darkThemeColor, darkTheme} from './Globals/Functions';
+import {
+  darkThemeColor,
+  darkTheme,
+  storeCommonData,
+  deleteDatabaseFile,
+  storeDatabaseCreds,
+} from './Globals/Functions';
 
 import TopBar from './Components/TopBar';
 import OTPTextInput from 'react-native-otp-textinput';
-import {
-  USER_NAME,
-  USER_EMAIL,
-  USER_PHONE,
-  API_URL,
-  TOKEN,
-} from './Globals/AsyncStorageEnum';
-import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
-import {MASTER_KEY, SALT} from './Globals/Database';
-import {updateCommonData, updateDatabaseManager} from './Globals/Functions';
-import CommonDataManager from './Globals/CommonDataManager';
+import {API_URL} from './Globals/AsyncStorageEnum';
 
 import Realm from 'realm';
 
@@ -36,37 +33,9 @@ const App: () => React$Node = ({otpToken, name, email, phone, password}) => {
   const [otpError, setOtpError] = useState(false);
   const [loading, setLoading] = useState(false);
   const BUTTONS = THEME_DATA.BUTTONS;
-  const commonData = CommonDataManager.getInstance();
-  const [creationError, setCreationError] = useState(false);
+  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
-  function storeDataAsync(token, call) {
-    Promise.all([
-      RNSecureKeyStore.set(USER_NAME, name, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_EMAIL, email, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(USER_PHONE, phone, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(TOKEN, token, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(MASTER_KEY, password, {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-      RNSecureKeyStore.set(SALT, '', {
-        accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-      }),
-    ])
-      .then((res) => {
-        call();
-      })
-      .catch((err) => {
-        console.log(err, 'THERE WAS AN ERROR ');
-      });
-  }
+  const [creationError, setCreationError] = useState(false);
 
   async function handleNext() {
     setLoading(true);
@@ -84,26 +53,15 @@ const App: () => React$Node = ({otpToken, name, email, phone, password}) => {
       body: JSON.stringify(params),
     })
       .then((res) => res.json())
-      .then((result) => {
+      .then(async (result) => {
         console.log(result);
         if (result.error === false) {
           // SAVE TOKEN TO LOCAL STORAGE
           let token = result.data.token;
-          storeDataAsync(token, () => {
-            updateCommonData(() => {
-              updateDatabaseManager(() => {
-                try {
-                  Realm.deleteFile({});
-                  console.log('REMOVED OLD REALM DB');
-                } catch (e) {
-                  console.log(e);
-                }
-                commonData.setApiToken(token);
-                nextScreen();
-              });
-            });
-          });
-          // CALL NEXT SCREEN
+          await storeCommonData(name, email, phone, token);
+          await storeDatabaseCreds(password);
+          await deleteDatabaseFile();
+          nextScreen();
         } else {
           console.error('SIGNUP ERROR: ', result.mssg);
           setLoading(false);
@@ -124,26 +82,7 @@ const App: () => React$Node = ({otpToken, name, email, phone, password}) => {
           topBar: {
             visible: false,
           },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 200,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
+          animations: ANIMATIONS.PP,
         },
         passProps: {
           otpToken,
@@ -161,10 +100,6 @@ const App: () => React$Node = ({otpToken, name, email, phone, password}) => {
       setOtpError(false);
     }
   }
-
-  useEffect(() => {
-    console.log('PROPS: ', otpToken, name, email, phone, password);
-  }, []);
 
   return (
     <>

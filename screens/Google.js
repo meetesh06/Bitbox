@@ -12,63 +12,61 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from 'react-native-navigation-hooks';
 
 import THEME_DATA from './Globals/ThemeData';
-import {darkTheme, callGoogleSignIn} from './Globals/Functions';
+import {
+  darkTheme,
+  callGoogleSignIn,
+  refreshToken,
+  updateRemoteStatus,
+} from './Globals/Functions';
 
-import {REMOTE_BACKUP, API_URL, TOKEN} from './Globals/AsyncStorageEnum';
-import RNSecureKeyStore, {ACCESSIBLE} from 'react-native-secure-key-store';
+import {API_URL} from './Globals/AsyncStorageEnum';
 
 import CommonDataManager from './Globals/CommonDataManager';
 
 import {PRIMARY} from './Globals/Colors';
+
+import {goToHome} from './Navigators/HomeNav';
 
 const App: () => React$Node = () => {
   const {setStackRoot} = useNavigation();
   const BUTTONS = THEME_DATA.BUTTONS;
   const commonData = CommonDataManager.getInstance();
   const [loading, setLoading] = useState(false);
-  async function handleSignup() {
-    // SET CLOUD STORAGE TO NO
-    await RNSecureKeyStore.set(REMOTE_BACKUP, 'false', {
-      accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-    });
-    commonData.setRemote(false);
-    handleNextPage();
-  }
 
-  function handleNextPage() {
-    setStackRoot({
-      component: {
-        name: 'com.mk1er.Theme',
-        options: {
-          topBar: {
-            visible: false,
-          },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 200,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
-        },
+  async function handleSignupWithoutGoogle() {
+    setLoading(true);
+    const params = {
+      token: commonData.getApiToken(),
+      status: false,
+    };
+    fetch(API_URL + '/remote-status-update', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-    });
+      body: JSON.stringify(params),
+    })
+      .then((res) => res.json())
+      .then(async (result) => {
+        console.log(result);
+        if (result.error === false) {
+          await refreshToken(result.data.token);
+          await updateRemoteStatus('false');
+          goToHome(setStackRoot);
+        } else {
+          commonData.setRemote(false);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        commonData.setRemote(false);
+        setLoading(false);
+      });
   }
 
   async function googleSignIn() {
+    setLoading(true);
     const {error, mssg} = await callGoogleSignIn();
     if (error === false) {
       const params = {
@@ -86,14 +84,9 @@ const App: () => React$Node = () => {
         .then((res) => res.json())
         .then(async (result) => {
           if (result.error === false) {
-            await RNSecureKeyStore.set(REMOTE_BACKUP, 'true', {
-              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-            });
-            await RNSecureKeyStore.set(TOKEN, result.data.token, {
-              accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-            });
-            commonData.setRemote(true);
-            handleNextPage();
+            await refreshToken(result.data.token);
+            await updateRemoteStatus('true');
+            goToHome(setStackRoot);
           } else {
             commonData.setRemote(false);
             setLoading(false);
@@ -149,7 +142,7 @@ const App: () => React$Node = () => {
               <Text style={styles.buttonSeperatorText}>OR</Text>
               <TouchableOpacity
                 style={darkTheme(BUTTONS.BUTTON5, 'btn')}
-                onPress={handleSignup}>
+                onPress={handleSignupWithoutGoogle}>
                 <Text style={darkTheme(BUTTONS.BUTTON5, 'text')}>
                   Continue without google
                 </Text>

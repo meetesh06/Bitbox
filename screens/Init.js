@@ -1,13 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
-// import AnimatedLinearGradient from 'react-native-animated-linear-gradient';
+import React, {useState} from 'react';
+import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import TypeWriter from 'react-native-typewriter';
 import {useNavigation} from 'react-native-navigation-hooks';
 import THEME_DATA from './Globals/ThemeData';
@@ -15,31 +7,24 @@ import {ignoreTheme} from './Globals/Functions';
 
 import LinearGradient from 'react-native-linear-gradient';
 
-import {goToHome} from './Navigators/HomeNav';
-import CommonDataManager from './Globals/CommonDataManager';
-
 const App: () => React$Node = () => {
-  const {push, setStackRoot} = useNavigation();
+  const {push} = useNavigation();
 
   const [subHeading, setSubHeading] = useState(
     'protect your privacy online.  ',
   );
   const [sCount, setSCount] = useState(0);
-  const [signedIn, setSignedIn] = useState(true);
   const [sCountTyping, setSCountTyping] = useState(1);
 
   const BUTTONS = THEME_DATA.BUTTONS;
-  const commonData = CommonDataManager.getInstance();
+  const ANIMATIONS = THEME_DATA.ANIMATIONS;
 
   function smallHeadingHandler() {
     if (sCount === 0) {
       setSCountTyping(-1);
       setSCount(1);
-    } else if (sCount === 1) {
-      setSubHeading('bb9471722fc647454ee7a58c3...');
-      setSCount(2);
     } else {
-      setSubHeading('Protect your accounts from hackers');
+      setSubHeading('bb9471722fc647454ee7a58c3...');
       setSCountTyping(1);
     }
   }
@@ -53,42 +38,11 @@ const App: () => React$Node = () => {
           topBar: {
             visible: false,
           },
-          animations: {
-            push: {
-              content: {
-                alpha: {
-                  from: 0,
-                  to: 1,
-                  duration: 200,
-                },
-              },
-            },
-            pop: {
-              content: {
-                alpha: {
-                  from: 1,
-                  to: 0,
-                  duration: 100,
-                },
-              },
-            },
-          },
+          animations: ANIMATIONS.PP,
         },
       },
     });
   }
-
-  useEffect(() => {
-    // if (commonData.getSignedIn() && commonData.getMasterKeyStatus()) {
-    //   let timer1 = setTimeout(() => goToHome(setStackRoot), 1000);
-    //   return () => {
-    //     clearTimeout(timer1);
-    //   };
-    // } else {
-    //   setSignedIn(false);
-    // }
-    setSignedIn(false);
-  }, [commonData, setStackRoot]);
 
   return (
     <>
@@ -114,14 +68,11 @@ const App: () => React$Node = () => {
         </View>
 
         <View style={styles.bottomButtonContainer}>
-          {signedIn && <ActivityIndicator size="large" color="#fff" />}
-          {!signedIn && (
-            <TouchableOpacity
-              style={ignoreTheme(BUTTONS.BUTTON1, 'btn')}
-              onPress={handleNextScreen}>
-              <Text style={ignoreTheme(BUTTONS.BUTTON1, 'text')}>START</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={ignoreTheme(BUTTONS.BUTTON1, 'btn')}
+            onPress={handleNextScreen}>
+            <Text style={ignoreTheme(BUTTONS.BUTTON1, 'text')}>START</Text>
+          </TouchableOpacity>
         </View>
         <Text style={styles.madeInIndiaText}>MADE IN INDIA</Text>
       </LinearGradient>
